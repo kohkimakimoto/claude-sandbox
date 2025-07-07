@@ -262,7 +262,7 @@ function runClaude() {
   buildProfile
 
   # echo "sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN $@"
-  sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN "$@"
+  exec sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN "$@"
 }
 
 function main() {
