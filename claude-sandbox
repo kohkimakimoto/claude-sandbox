@@ -25,11 +25,13 @@
 #/   If neither exists, claude-sandbox will run its built-in default profile.
 #/
 #/   You can use environment variables in the profile file.
-#/   The following variables are provided by claude-sandbox:
+#/   The following variables are provided by claude-sandbox.
+#    You can also override them by setting them in your shell.
 #/
-#/   - $CLAUDE_SANDBOX_WORKDIR: The working directory where the command is executed. It is usually the current working directory.
+#/   - $CLAUDE_SANDBOX_WORKDIR: The working directory where the command is executed. Defaults to the current working directory.
 #/   - $CLAUDE_SANDBOX_CLAUDE_BIN: The path to the claude binary. Defaults to the resolved path of 'claude' command.
 #/
+#/   claude-sandbox has utility commands to create and check the sandbox profile.
 #/   Use 'claude-sandbox init' to create a project-specific profile.
 #/   Use 'claude-sandbox init-global' to create a global profile.
 #/   Use 'claude-sandbox profile' to view the current evaluated profile.
