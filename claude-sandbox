@@ -34,7 +34,7 @@
 #/   Use 'claude-sandbox init-global' to create a global profile.
 #/   Use 'claude-sandbox profile' to view the current evaluated profile.
 #/
-#/ Examples:
+#/ Example Usage:
 #/   # Create project-specific sandbox profile
 #/   $ claude-sandbox init               
 #/
