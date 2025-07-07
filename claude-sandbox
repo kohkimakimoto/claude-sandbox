@@ -56,8 +56,8 @@
 #/   $ claude-sandbox
 #/   $ claude-sandbox --dangerously-skip-permissions
 #/
-#/   # Conflict commands or options can be used with 'claude' command prefix.
-#/   # For example, The following command shows 'claude' help not 'claude-sandbox' help.   
+#/   Commands or options that conflict with claude-sandbox can be used with the claude command prefix.
+#/   For example, the following command shows the claude help, not the claude-sandbox help.
 #/   $ claude-sandbox claude -h
 #/
 #/ Copyright (c) Kohki Makimoto <kohki.makimoto@gmail.com>
