@@ -1,0 +1,315 @@
+#!/usr/bin/env bash
+
+#/ Usage: claude-sandbox [<options...>] [<command>]|[claude [<args of claude command...>]]
+#/
+#/ A wrapper around the `claude` command to run it in a sandboxed environment.
+#/
+#/ Options:
+#/   -h  Show help.
+#/
+#/ Commands:
+#/   init         Create .claude/sandbox.sb file if it doesn't exist
+#/   init-global  Create $HOME/.claude/sandbox.sb file if it doesn't exist
+#/   profile      Print evaluated profile and exit
+#/   claude       Run the claude command in a sandboxed environment
+#/
+#/ Profile:
+#/   The profile file defines sandbox environment.
+#/   This is a sandbox-exec (Apple Seatbelt) profile.
+#/   claude-sandbox looks for profile files in the following order:
+#/   
+#/   1. .claude/sandbox.sb (project-specific profile)
+#/   2. $HOME/.claude/sandbox.sb (global profile)
+#/   
+#/   The project-specific profile takes precedence over the global profile.
+#/   If neither exists, claude-sandbox will run its built-in default profile.
+#/
+#/   You can use environment variables in the profile file.
+#/   The following variables are provided by claude-sandbox:
+#/
+#/   - $CLAUDE_SANDBOX_WORKDIR: The working directory where the command is executed. It is usually the current working directory.
+#/   - $CLAUDE_SANDBOX_CLAUDE_BIN: The path to the claude binary. Defaults to the resolved path of 'claude' command.
+#/
+#/   Use 'claude-sandbox init' to create a project-specific profile.
+#/   Use 'claude-sandbox init-global' to create a global profile.
+#/   Use 'claude-sandbox profile' to view the current evaluated profile.
+#/
+#/ Examples:
+#/   # Create project-specific sandbox profile
+#/   $ claude-sandbox init               
+#/
+#/   # Create global sandbox profile
+#/   $ claude-sandbox init-global        
+#/
+#/   # Print the evaluated sandbox profile
+#/   $ claude-sandbox profile
+#/
+#/   # Run Claude Code in a sandboxed environment
+#/   $ claude-sandbox claude
+#/
+#/   # Run Claude Code with arguments in a sandboxed environment
+#/   $ claude-sandbox claude --dangerously-skip-permissions
+#/
+#/   # You can also run Claude Code without the 'claude' command prefix.
+#/   $ claude-sandbox
+#/   $ claude-sandbox --dangerously-skip-permissions
+#/
+#/   # Conflict commands or options can be used with 'claude' command prefix.
+#/   # For example, The following command shows 'claude' help not 'claude-sandbox' help.   
+#/   $ claude-sandbox claude -h
+#/
+#/ Copyright (c) Kohki Makimoto <kohki.makimoto@gmail.com>
+#/ The MIT License (MIT)
+set -e -o pipefail
+
+function print_help() {
+  local filepath="${BASH_SOURCE[0]}"
+  grep '^#/' <"$filepath" | cut -c4-
+}
+
+function abort() {
+  local progname=$(basename $0)
+  { if [[ "$#" -eq 0 ]]; then cat -
+    else echo "${progname} error: $*"
+    fi
+  } >&2
+  exit 1
+}
+
+function setupEnv() {
+  export CLAUDE_SANDBOX_WORKDIR=${CLAUDE_SANDBOX_WORKDIR:-$PWD}
+  
+  if [[ -z "${CLAUDE_SANDBOX_CLAUDE_BIN}" ]]; then
+    local claude_path="$(command -v "claude" || true)"
+    if [[ -n "$claude_path" ]]; then
+      export CLAUDE_SANDBOX_CLAUDE_BIN="$claude_path"
+    elif [[ -f "$HOME/.claude/local/claude" ]]; then
+      export CLAUDE_SANDBOX_CLAUDE_BIN="$HOME/.claude/local/claude"
+    else
+      export CLAUDE_SANDBOX_CLAUDE_BIN="claude"
+    fi
+  fi
+}
+
+function initSandbox() {
+  setupEnv
+  
+  local sandbox_file="$CLAUDE_SANDBOX_WORKDIR/.claude/sandbox.sb"
+  
+  if [[ -f "$sandbox_file" ]]; then
+    abort "Sandbox profile file already exists: $sandbox_file"
+  fi
+  
+  # Create .claude directory if it doesn't exist
+  mkdir -p "$CLAUDE_SANDBOX_WORKDIR/.claude"
+  
+  # Create sandbox.sb with default template
+  cat << 'EOF' > "$sandbox_file"
+;; This is a project-specific sandbox profile for claude-sandbox.
+;; You can customize this file to suit your project's needs.
+;; see https://github.com/kohkimakimoto/claude-sandbox
+(version 1)
+
+(allow default)
+
+(deny file-write*)
+(allow file-write*
+    ;; Working directory
+    (subpath "$CLAUDE_SANDBOX_WORKDIR")
+
+    ;; Claude Code
+    (subpath "$HOME/.claude")
+    (literal "$HOME/.claude.json")
+    (literal "$HOME/.claude.json.lock")
+    (literal "$HOME/.claude.json.backup")
+
+    ;; Temporary directories and files
+    (subpath "/tmp")
+    (subpath "/var/folders")
+    (subpath "/private/tmp")
+    (subpath "/private/var/folders")
+
+    ;; Home directory
+    (subpath "$HOME/.npm")
+    (subpath "$HOME/.cache")
+
+    ;; devices
+    (literal "/dev/stdout")
+    (literal "/dev/stderr")
+    (literal "/dev/null")
+)
+EOF
+  
+  echo "Created sandbox profile file: $sandbox_file"
+}
+
+function initGlobalSandbox() {
+  local sandbox_file="$HOME/.claude/sandbox.sb"
+  
+  if [[ -f "$sandbox_file" ]]; then
+    abort "Global sandbox profile file already exists: $sandbox_file"
+  fi
+  
+  # Create .claude directory if it doesn't exist
+  mkdir -p "$HOME/.claude"
+  
+  # Create sandbox.sb with default template
+  cat << 'EOF' > "$sandbox_file"
+;; This is a global sandbox profile for claude-sandbox.
+;; You can customize this file to suit your needs.
+;; see https://github.com/kohkimakimoto/claude-sandbox
+(version 1)
+
+(allow default)
+
+(deny file-write*)
+(allow file-write*
+    ;; Working directory
+    (subpath "$CLAUDE_SANDBOX_WORKDIR")
+
+    ;; Claude Code
+    (subpath "$HOME/.claude")
+    (literal "$HOME/.claude.json")
+    (literal "$HOME/.claude.json.lock")
+    (literal "$HOME/.claude.json.backup")
+
+    ;; Temporary directories and files
+    (subpath "/tmp")
+    (subpath "/var/folders")
+    (subpath "/private/tmp")
+    (subpath "/private/var/folders")
+
+    ;; Home directory
+    (subpath "$HOME/.npm")
+    (subpath "$HOME/.cache")
+
+    ;; devices
+    (literal "/dev/stdout")
+    (literal "/dev/stderr")
+    (literal "/dev/null")
+)
+EOF
+  
+  echo "Created global sandbox profile file: $sandbox_file"
+}
+
+function buildProfile() {
+  setupEnv
+
+  if [[ -z "${CLAUDE_SANDBOX_PROFILE_FILE}" ]]; then
+    tmpfile=$(mktemp -t claude-sandbox-profile)
+    export CLAUDE_SANDBOX_PROFILE_FILE=$tmpfile
+    # remove the temporary file when the script exits
+    trap "rm $tmpfile" 0
+  fi
+    
+  # Check if .claude/sandbox.sb exists in the working directory
+  if [[ -f "$CLAUDE_SANDBOX_WORKDIR/.claude/sandbox.sb" ]]; then
+    # Use the project .claude/sandbox.sb as template with variable expansion
+    eval "cat << EOF > $CLAUDE_SANDBOX_PROFILE_FILE
+$(cat "$CLAUDE_SANDBOX_WORKDIR/.claude/sandbox.sb")
+
+EOF"
+  elif [[ -f "$HOME/.claude/sandbox.sb" ]]; then
+    # Use the user .claude/sandbox.sb as template with variable expansion
+    eval "cat << EOF > $CLAUDE_SANDBOX_PROFILE_FILE
+$(cat "$HOME/.claude/sandbox.sb")
+
+EOF"
+  else
+    # Use the default template
+    cat << EOF > $CLAUDE_SANDBOX_PROFILE_FILE
+;; This is a default built-in sandbox profile for claude-sandbox.
+(version 1)
+
+(allow default)
+
+(deny file-write*)
+(allow file-write*
+    ;; Working directory
+    (subpath "$CLAUDE_SANDBOX_WORKDIR")
+
+    ;; Claude Code
+    (subpath "$HOME/.claude")
+    (literal "$HOME/.claude.json")
+    (literal "$HOME/.claude.json.lock")
+    (literal "$HOME/.claude.json.backup")
+
+    ;; Temporary directories and files
+    (subpath "/tmp")
+    (subpath "/var/folders")
+    (subpath "/private/tmp")
+    (subpath "/private/var/folders")
+
+    ;; Home directory
+    (subpath "$HOME/.npm")
+    (subpath "$HOME/.cache")
+
+    ;; devices
+    (literal "/dev/stdout")
+    (literal "/dev/stderr")
+    (literal "/dev/null")
+)
+EOF
+  fi
+}
+
+function runClaude() {
+  if [[ 'Darwin' != "$(uname)" ]]; then
+    abort "Unsupported operating system: $(uname -s)"
+  fi
+
+  buildProfile
+
+  # echo "sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN $@"
+  sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN "$@"
+}
+
+function main() {
+  if [[ $# -eq 0 ]]; then
+    runClaude
+  fi
+
+  for opt in "$@"; do
+    case "$opt" in
+      '-h'|'--help')
+        print_help
+        exit 0
+        ;;
+      *)
+        # Check whether the current argument is 'claude' or an arbitrary argument.
+        local command="" && [[ $# -ne 0 ]] && command=$1
+        case $command in
+        'init')
+          # Initialize project sandbox profile
+          initSandbox
+          exit 0
+          ;;
+        'init-global')
+          # Initialize global sandbox profile
+          initGlobalSandbox
+          exit 0
+          ;;
+        'profile')
+          # Print the profile and exit
+          buildProfile
+          cat "$CLAUDE_SANDBOX_PROFILE_FILE"
+          exit 0
+          ;;
+        'claude')
+          # Run claude
+          runClaude "${@:2}"
+          exit 0
+          ;;
+        *)
+          # Run claude without 'claude' prefix. It is shortcut for running claude,
+          runClaude "$@"
+          exit 0
+          ;;
+        esac
+        ;;
+    esac
+  done
+}
+
+main "$@"
