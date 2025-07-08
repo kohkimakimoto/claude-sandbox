@@ -83,9 +83,6 @@ You will get output as the following:
 ```
 
 The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. 
-The default sandbox profile restricts write access to only safe locations:
-your current working directory, Claude Code configuration files, temporary directories, and common cache directories like `~/.npm` and `~/.cache`.
-
 This sandbox profile protects you from accidentally breaking your system by preventing Claude Code from modifying files outside the allowed areas. For example, even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations:
 
 ### Configuring Sandbox Profiles
