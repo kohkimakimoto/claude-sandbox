@@ -82,24 +82,26 @@ You will get output as the following:
 )
 ```
 
-The default sandbox restricts write access to only safe locations:
+The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. 
+The default sandbox profile restricts write access to only safe locations:
 your current working directory, Claude Code configuration files, temporary directories, and common cache directories like `~/.npm` and `~/.cache`.
 
 This sandbox profile protects you from accidentally breaking your system by preventing Claude Code from modifying files outside the allowed areas. For example, even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations:
 
-### Setting Up Sandbox Profiles
+### Configuring Sandbox Profiles
 
 To customize the sandbox environment, you need to create a sandbox profile. There are two types of profiles:
 
 #### Project-Specific Profile
 
-Create a project-specific sandbox profile that applies only to the current directory:
+Create a project-specific sandbox profile that applies only to the current project:
 
 ```bash
 claude-sandbox init
 ```
 
 This creates `.claude/sandbox.sb` in your current directory.
+You can then edit this file to customize the sandbox permissions for your project.
 
 #### Global Profile
 
@@ -109,13 +111,13 @@ Create a global sandbox profile that applies to all projects:
 claude-sandbox init-global
 ```
 
-This creates `$HOME/.claude/sandbox.sb` in your home directory.
+This creates `~/.claude/sandbox.sb`.
 
 **Profile Priority**: Project-specific profiles take precedence over global profiles. If neither exists, a built-in default profile is used.
 
 ### Viewing the Current Profile
 
-To see the evaluated sandbox profile that will be used:
+To see the sandbox profile that will be used:
 
 ```bash
 claude-sandbox profile

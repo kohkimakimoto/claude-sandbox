@@ -206,20 +206,14 @@ function buildProfile() {
     
   # Check if .claude/sandbox.sb exists in the working directory
   if [[ -f "$CLAUDE_SANDBOX_WORKDIR/.claude/sandbox.sb" ]]; then
-    # Use the project .claude/sandbox.sb as template with variable expansion
-    eval "cat << EOF > $CLAUDE_SANDBOX_PROFILE_FILE
-$(cat "$CLAUDE_SANDBOX_WORKDIR/.claude/sandbox.sb")
-
-EOF"
+    # Use the project .claude/sandbox.sb
+    cp -f "$CLAUDE_SANDBOX_WORKDIR/.claude/sandbox.sb" "$CLAUDE_SANDBOX_PROFILE_FILE"
   elif [[ -f "$HOME/.claude/sandbox.sb" ]]; then
-    # Use the user .claude/sandbox.sb as template with variable expansion
-    eval "cat << EOF > $CLAUDE_SANDBOX_PROFILE_FILE
-$(cat "$HOME/.claude/sandbox.sb")
-
-EOF"
+    # Use the user .claude/sandbox.sb
+    cp -f "$HOME/.claude/sandbox.sb" "$CLAUDE_SANDBOX_PROFILE_FILE"
   else
-    # Use the default template
-    cat << EOF > $CLAUDE_SANDBOX_PROFILE_FILE
+    # Use the default built-in profile
+    cat << 'EOF' > $CLAUDE_SANDBOX_PROFILE_FILE
 ;; This is a default built-in sandbox profile for claude-sandbox.
 (version 1)
 
