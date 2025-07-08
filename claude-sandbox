@@ -24,12 +24,11 @@
 #/   The project-specific profile takes precedence over the global profile.
 #/   If neither exists, claude-sandbox will run its built-in default profile.
 #/
-#/   You can use environment variables in the profile file.
-#/   The following variables are provided by claude-sandbox.
-#    You can also override them by setting them in your shell.
+#/   You can use parameters in the profile file using (param "NAME") syntax.
+#/   The following parameters are provided by claude-sandbox:
 #/
-#/   - $CLAUDE_SANDBOX_WORKDIR: The working directory where the command is executed. Defaults to the current working directory.
-#/   - $CLAUDE_SANDBOX_CLAUDE_BIN: The path to the claude binary. Defaults to the resolved path of 'claude' command.
+#/   - WORKDIR: The current working directory where claude-sandbox is executed.
+#/   - HOME: The user's home directory.
 #/
 #/   claude-sandbox has utility commands to create and check the sandbox profile.
 #/   Use 'claude-sandbox init' to create a project-specific profile.
@@ -117,13 +116,13 @@ function initSandbox() {
 (deny file-write*)
 (allow file-write*
     ;; Working directory
-    (subpath "$CLAUDE_SANDBOX_WORKDIR")
+    (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (subpath "$HOME/.claude")
-    (literal "$HOME/.claude.json")
-    (literal "$HOME/.claude.json.lock")
-    (literal "$HOME/.claude.json.backup")
+    (subpath (string-append (param "HOME") "/.claude"))
+    (literal (string-append (param "HOME") "/.claude.json"))
+    (literal (string-append (param "HOME") "/.claude.json.lock"))
+    (literal (string-append (param "HOME") "/.claude.json.backup"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
@@ -132,8 +131,8 @@ function initSandbox() {
     (subpath "/private/var/folders")
 
     ;; Home directory
-    (subpath "$HOME/.npm")
-    (subpath "$HOME/.cache")
+    (subpath (string-append (param "HOME") "/.npm"))
+    (subpath (string-append (param "HOME") "/.cache"))
 
     ;; devices
     (literal "/dev/stdout")
@@ -167,13 +166,13 @@ function initGlobalSandbox() {
 (deny file-write*)
 (allow file-write*
     ;; Working directory
-    (subpath "$CLAUDE_SANDBOX_WORKDIR")
+    (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (subpath "$HOME/.claude")
-    (literal "$HOME/.claude.json")
-    (literal "$HOME/.claude.json.lock")
-    (literal "$HOME/.claude.json.backup")
+    (subpath (string-append (param "HOME") "/.claude"))
+    (literal (string-append (param "HOME") "/.claude.json"))
+    (literal (string-append (param "HOME") "/.claude.json.lock"))
+    (literal (string-append (param "HOME") "/.claude.json.backup"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
@@ -182,8 +181,8 @@ function initGlobalSandbox() {
     (subpath "/private/var/folders")
 
     ;; Home directory
-    (subpath "$HOME/.npm")
-    (subpath "$HOME/.cache")
+    (subpath (string-append (param "HOME") "/.npm"))
+    (subpath (string-append (param "HOME") "/.cache"))
 
     ;; devices
     (literal "/dev/stdout")
@@ -229,13 +228,13 @@ EOF"
 (deny file-write*)
 (allow file-write*
     ;; Working directory
-    (subpath "$CLAUDE_SANDBOX_WORKDIR")
+    (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (subpath "$HOME/.claude")
-    (literal "$HOME/.claude.json")
-    (literal "$HOME/.claude.json.lock")
-    (literal "$HOME/.claude.json.backup")
+    (subpath (string-append (param "HOME") "/.claude"))
+    (literal (string-append (param "HOME") "/.claude.json"))
+    (literal (string-append (param "HOME") "/.claude.json.lock"))
+    (literal (string-append (param "HOME") "/.claude.json.backup"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
@@ -244,8 +243,8 @@ EOF"
     (subpath "/private/var/folders")
 
     ;; Home directory
-    (subpath "$HOME/.npm")
-    (subpath "$HOME/.cache")
+    (subpath (string-append (param "HOME") "/.npm"))
+    (subpath (string-append (param "HOME") "/.cache"))
 
     ;; devices
     (literal "/dev/stdout")
@@ -263,8 +262,8 @@ function runClaude() {
 
   buildProfile
 
-  # echo "sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN $@"
-  exec sandbox-exec -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN "$@"
+  # echo "sandbox-exec -D WORKDIR=$CLAUDE_SANDBOX_WORKDIR -D HOME=$HOME -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN $@"
+  exec sandbox-exec -D WORKDIR="$CLAUDE_SANDBOX_WORKDIR" -D HOME="$HOME" -f $CLAUDE_SANDBOX_PROFILE_FILE $CLAUDE_SANDBOX_CLAUDE_BIN "$@"
 }
 
 function main() {
