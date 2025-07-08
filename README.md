@@ -85,11 +85,11 @@ You will get output as the following:
 The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. 
 This sandbox profile protects you from accidentally breaking your system by preventing Claude Code from modifying files outside the allowed areas. For example, even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations:
 
-### Configuring Sandbox Profiles
+## Configuring Sandbox Profiles
 
 To customize the sandbox environment, you need to create a sandbox profile. There are two types of profiles:
 
-#### Project-Specific Profile
+### Project-Specific Profile
 
 Create a project-specific sandbox profile that applies only to the current project:
 
@@ -100,7 +100,7 @@ claude-sandbox init
 This creates `.claude/sandbox.sb` in your current directory.
 You can then edit this file to customize the sandbox permissions for your project.
 
-#### Global Profile
+### Global Profile
 
 Create a global sandbox profile that applies to all projects:
 
@@ -112,7 +112,7 @@ This creates `~/.claude/sandbox.sb`.
 
 **Profile Priority**: Project-specific profiles take precedence over global profiles. If neither exists, a built-in default profile is used.
 
-#### Parameters
+### Parameters
 
 The profile uses parameters that are passed from claude-sandbox automatically:
 
