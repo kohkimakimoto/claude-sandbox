@@ -64,6 +64,7 @@ You will get output as the following:
     (literal (string-append (param "HOME") "/.claude.json"))
     (literal (string-append (param "HOME") "/.claude.json.lock"))
     (literal (string-append (param "HOME") "/.claude.json.backup"))
+    (regex (string-append "^" (param "HOME") "/\\.claude\\.json\\.tmp"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
