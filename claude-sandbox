@@ -123,6 +123,7 @@ function initSandbox() {
     (literal (string-append (param "HOME") "/.claude.json"))
     (literal (string-append (param "HOME") "/.claude.json.lock"))
     (literal (string-append (param "HOME") "/.claude.json.backup"))
+    (regex (string-append "^" (param "HOME") "/\\.claude\\.json\\.tmp"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
@@ -173,6 +174,7 @@ function initGlobalSandbox() {
     (literal (string-append (param "HOME") "/.claude.json"))
     (literal (string-append (param "HOME") "/.claude.json.lock"))
     (literal (string-append (param "HOME") "/.claude.json.backup"))
+    (regex (string-append "^" (param "HOME") "/\\.claude\\.json\\.tmp"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
@@ -229,6 +231,7 @@ function buildProfile() {
     (literal (string-append (param "HOME") "/.claude.json"))
     (literal (string-append (param "HOME") "/.claude.json.lock"))
     (literal (string-append (param "HOME") "/.claude.json.backup"))
+    (regex (string-append "^" (param "HOME") "/\\.claude\\.json\\.tmp"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
