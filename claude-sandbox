@@ -134,6 +134,7 @@ function initSandbox() {
     ;; Home directory
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
+    (subpath (string-append (param "HOME") "/Library/Caches"))
 
     ;; devices
     (literal "/dev/stdout")
@@ -185,6 +186,7 @@ function initGlobalSandbox() {
     ;; Home directory
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
+    (subpath (string-append (param "HOME") "/Library/Caches"))
 
     ;; devices
     (literal "/dev/stdout")
@@ -242,6 +244,7 @@ function buildProfile() {
     ;; Home directory
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
+    (subpath (string-append (param "HOME") "/Library/Caches"))
 
     ;; devices
     (literal "/dev/stdout")
