@@ -60,11 +60,10 @@ You will get output as the following:
     (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (subpath (string-append (param "HOME") "/.claude"))
-    (literal (string-append (param "HOME") "/.claude.json"))
-    (literal (string-append (param "HOME") "/.claude.json.lock"))
-    (literal (string-append (param "HOME") "/.claude.json.backup"))
-    (regex (string-append "^" (param "HOME") "/\\.claude\\.json\\.tmp"))
+    (regex (string-append "^" (param "HOME") "/.claude*"))
+
+    ;; Keychain access for Claude Code credentials
+    (subpath (string-append (param "HOME") "/Library/Keychains"))
 
     ;; Temporary directories and files
     (subpath "/tmp")
@@ -75,11 +74,14 @@ You will get output as the following:
     ;; Home directory
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
+    (subpath (string-append (param "HOME") "/Library/Caches"))
 
     ;; devices
     (literal "/dev/stdout")
     (literal "/dev/stderr")
     (literal "/dev/null")
+    (literal "/dev/dtracehelper")
+    (regex #"^/dev/tty*")
 )
 ```
 
