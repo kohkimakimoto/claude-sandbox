@@ -134,7 +134,8 @@ function initSandbox() {
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
     (subpath (string-append (param "HOME") "/Library/Caches"))
-
+    (subpath (string-append (param "HOME") "/.viminfo.tmp"))
+    
     ;; devices
     (literal "/dev/stdout")
     (literal "/dev/stderr")
@@ -187,6 +188,7 @@ function initGlobalSandbox() {
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
     (subpath (string-append (param "HOME") "/Library/Caches"))
+    (subpath (string-append (param "HOME") "/.viminfo.tmp"))
 
     ;; devices
     (literal "/dev/stdout")
@@ -246,6 +248,7 @@ function buildProfile() {
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
     (subpath (string-append (param "HOME") "/Library/Caches"))
+    (subpath (string-append (param "HOME") "/.viminfo.tmp"))
 
     ;; devices
     (literal "/dev/stdout")
