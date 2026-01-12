@@ -119,7 +119,7 @@ function initSandbox() {
     (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (regex (string-append "^" (param "HOME") "/.claude*"))
+    (regex (string-append "^" (param "HOME") "/\\.claude"))
 
     ;; Keychain access for Claude Code credentials
     (subpath (string-append (param "HOME") "/Library/Keychains"))
@@ -173,7 +173,7 @@ function initGlobalSandbox() {
     (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (regex (string-append "^" (param "HOME") "/.claude*"))
+    (regex (string-append "^" (param "HOME") "/\\.claude"))
 
     ;; Keychain access for Claude Code credentials
     (subpath (string-append (param "HOME") "/Library/Keychains"))
@@ -233,7 +233,7 @@ function buildProfile() {
     (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (regex (string-append "^" (param "HOME") "/.claude*"))
+    (regex (string-append "^" (param "HOME") "/\\.claude"))
 
     ;; Keychain access for Claude Code credentials
     (subpath (string-append (param "HOME") "/Library/Keychains"))
