@@ -75,6 +75,7 @@ You will get output as the following:
     (subpath (string-append (param "HOME") "/.npm"))
     (subpath (string-append (param "HOME") "/.cache"))
     (subpath (string-append (param "HOME") "/Library/Caches"))
+    (regex (string-append "^" (param "HOME") "/\\.viminfo"))
 
     ;; devices
     (literal "/dev/stdout")
