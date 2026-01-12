@@ -60,7 +60,7 @@ You will get output as the following:
     (subpath (param "WORKDIR"))
 
     ;; Claude Code
-    (regex (string-append "^" (param "HOME") "/.claude*"))
+    (regex (string-append "^" (param "HOME") "/\\.claude"))
 
     ;; Keychain access for Claude Code credentials
     (subpath (string-append (param "HOME") "/Library/Keychains"))
