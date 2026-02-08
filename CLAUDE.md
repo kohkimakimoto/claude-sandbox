@@ -105,6 +105,7 @@ No circular dependencies.
 
 | Variable | Description |
 |---|---|
+| `CLAUDE_SANDBOX` | Set to `1` when running inside claude-sandbox (set automatically) |
 | `CLAUDE_SANDBOX_WORKDIR` | Override working directory for sandbox execution |
 | `CLAUDE_SANDBOX_CLAUDE_BIN` | Override path to claude binary |
 | `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Unix socket path for unboxexec daemon (set automatically) |

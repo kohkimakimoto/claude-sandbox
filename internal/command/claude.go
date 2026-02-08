@@ -61,7 +61,7 @@ func RunClaudeAction(ctx context.Context, cmd *cli.Command, args []string) error
 
 	// Run sandbox-exec as a child process
 	eCmd := exec.CommandContext(ctx, "sandbox-exec", sandboxExecArgs...)
-	eCmd.Env = append(os.Environ(), "CLAUDE_SANDBOX_UNBOXEXEC_SOCK="+sockPath)
+	eCmd.Env = append(os.Environ(), "CLAUDE_SANDBOX=1", "CLAUDE_SANDBOX_UNBOXEXEC_SOCK="+sockPath)
 	eCmd.Stdin = os.Stdin
 	eCmd.Stdout = os.Stdout
 	eCmd.Stderr = os.Stderr
