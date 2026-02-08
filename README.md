@@ -198,7 +198,7 @@ The project-specific configuration takes precedence over the global configuratio
 # is matched against each pattern. If any pattern matches, the command is allowed.
 # If empty or not configured, all commands are rejected.
 allowed_commands = [
-    "^playwright",
+    "^playwright-cli",
 ]
 ```
 
