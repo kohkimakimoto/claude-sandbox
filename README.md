@@ -1,28 +1,25 @@
 # claude-sandbox
 
-A wrapper around the `claude` command to run it in a sandboxed environment using macOS's sandbox-exec.
+A wrapper around the `claude` command to run it in a sandboxed environment using macOS's `sandbox-exec`.
+
+It also includes a built-in daemon ([unboxexec](#sandbox-external-command-execution)) that allows Claude Code running inside the sandbox to execute specific commands outside the sandbox via a Unix Domain Socket.
 
 ## Installation
 
-`claude-sandbox` is a simple, single-file Bash script. You can download the [`claude-sandbox`](https://github.com/kohkimakimoto/claude-sandbox/raw/main/claude-sandbox) file from the repository and make the file executable.
+Download the binary from the [GitHub Releases](https://github.com/kohkimakimoto/claude-sandbox/releases) page and place it in your `PATH`.
 
-The following command will download the script and install it to `/usr/local/bin/claude-sandbox`:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/kohkimakimoto/claude-sandbox/refs/heads/main/claude-sandbox | sudo tee /usr/local/bin/claude-sandbox > /dev/null && sudo chmod +x /usr/local/bin/claude-sandbox
-```
-
-To check if the installation was successful, you can run the following command to see the help message:
+Or build from source:
 
 ```bash
-claude-sandbox -h
+git clone https://github.com/kohkimakimoto/claude-sandbox.git
+cd claude-sandbox
+make build
+# Binary is at .dev/build/dev/claude-sandbox
 ```
 
 ## Usage
 
-`claude-sandbox` can be used as a drop-in replacement for the `claude` command, but runs in a sandboxed environment that restricts access to the file system, network, and other resources.
-
-The simplest way to use `claude-sandbox` is as a direct replacement for the `claude` command:
+`claude-sandbox` can be used as a drop-in replacement for the `claude` command, but runs in a sandboxed environment that restricts file system write access.
 
 ```bash
 # Instead of: claude
@@ -39,14 +36,22 @@ claude-sandbox claude
 claude-sandbox claude --dangerously-skip-permissions
 ```
 
-By default, `claude-sandbox` uses a built-in sandbox profile that restricts file system access to the current working directory, Claude Code configuration, and temporary directories. 
-You can view the actual profile being used with `claude-sandbox profile` command.
+Commands or options that conflict with claude-sandbox's own can be passed using the `claude` subcommand prefix. For example, the following shows the claude help, not the claude-sandbox help:
+
+```bash
+claude-sandbox claude -h
+```
+
+### Viewing the Sandbox Profile
+
+By default, `claude-sandbox` uses a built-in sandbox profile that restricts file system write access to the current working directory, Claude Code configuration, and temporary directories.
+You can view the actual profile being used:
 
 ```bash
 claude-sandbox profile
 ```
 
-You will get output as the following:
+Example output:
 
 ```scheme
 ;; This is a default built-in sandbox profile for claude-sandbox.
@@ -86,12 +91,11 @@ You will get output as the following:
 )
 ```
 
-The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. 
-This sandbox profile protects you from accidentally breaking your system by preventing Claude Code from modifying files outside the allowed areas. For example, even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations:
+The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. Even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations.
 
 ## Configuring Sandbox Profiles
 
-To customize the sandbox environment, you need to create a sandbox profile. There are two types of profiles:
+To customize the sandbox environment, you can create a sandbox profile. There are two types of profiles:
 
 ### Project-Specific Profile
 
@@ -131,6 +135,45 @@ You can use these parameters in your sandbox profile like this:
     (subpath (string-append (param "HOME") "/.claude"))
 )
 ```
+
+## Sandbox-External Command Execution
+
+Some tools (e.g. Playwright) cannot run inside the macOS sandbox because they use their own sandboxing mechanisms, which conflict with the nested sandbox environment.
+
+`claude-sandbox` includes a built-in daemon called **unboxexec** that runs outside the sandbox as a goroutine. When `claude-sandbox` starts, the daemon listens on a Unix Domain Socket and the socket path is passed to Claude Code via the `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` environment variable.
+
+Claude Code running inside the sandbox can send JSON requests to this socket to execute commands outside the sandbox.
+
+### Protocol
+
+**Request**:
+```json
+{
+  "command": "playwright",
+  "args": ["install", "chromium"],
+  "env": {"KEY": "value"},
+  "dir": "/path/to/workdir",
+  "timeout": 300
+}
+```
+
+**Response**:
+```json
+{
+  "stdout": "...",
+  "stderr": "...",
+  "exit_code": 0,
+  "error": ""
+}
+```
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `CLAUDE_SANDBOX_WORKDIR` | Override working directory for sandbox execution |
+| `CLAUDE_SANDBOX_CLAUDE_BIN` | Override path to the `claude` binary |
+| `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Unix socket path for the unboxexec daemon (set automatically) |
 
 ## License
 
