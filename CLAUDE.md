@@ -16,7 +16,7 @@ Implemented in Go for single binary distribution and integrated process manageme
 ### Sandbox-External Command Execution (unboxexec)
 
 - Built-in daemon to execute commands outside the sandbox
-- Communication via Unix Domain Socket (`/tmp/claude-sandbox-unboxexec-{PID}.sock`)
+- Communication via Unix Domain Socket (`{TMPDIR}/claude-sandbox-unboxexec-{PID}.sock`)
 - Socket path is passed to Claude Code via `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` environment variable
 
 ### Configuration File
@@ -45,7 +45,7 @@ allowed_commands = [
 claude-sandbox (single process)
 │
 ├─ unboxexec daemon (goroutine)
-│  ├─ Listen on Unix socket: /tmp/claude-sandbox-unboxexec-{PID}.sock
+│  ├─ Listen on Unix socket: {TMPDIR}/claude-sandbox-unboxexec-{PID}.sock
 │  ├─ Accept JSON command execution requests
 │  └─ Execute commands outside sandbox, return JSON responses
 │
@@ -86,6 +86,9 @@ cancelled and the daemon goroutine shuts down.
 
 ```
 claude-sandbox/
+├── .github/
+│   └── workflows/
+│       └── test.yml               # GitHub Actions test workflow
 ├── cmd/
 │   └── claude-sandbox/
 │       └── main.go                # Entry point
@@ -93,16 +96,20 @@ claude-sandbox/
 │   ├── command/
 │   │   ├── app.go                 # Run(), newApp() — CLI application setup
 │   │   ├── claude.go              # ClaudeCommand, RunClaudeAction
+│   │   ├── help.go                # RootHelpTemplate, HelpTemplate
 │   │   ├── init.go                # InitCommand — create project sandbox profile
 │   │   ├── init_global.go         # InitGlobalCommand — create global sandbox profile
 │   │   ├── profile.go             # ProfileCommand — print evaluated profile
-│   │   └── help.go                # RootHelpTemplate, HelpTemplate
+│   │   └── unboxexec.go           # UnboxexecCommand — frontend CLI for unboxexec
 │   ├── config/
-│   │   └── config.go              # Config struct, Load(), CompileAllowedCommands()
+│   │   ├── config.go              # Config struct, Load(), CompileAllowedCommands()
+│   │   └── config_test.go         # Tests for config
 │   ├── sandbox/
 │   │   ├── env.go                 # GetWorkdir, GetClaudeBin, SocketPath
 │   │   └── profile.go             # BuildProfile, profile templates
 │   ├── unboxexec/
+│   │   ├── client.go              # SendRequest — client for unboxexec daemon
+│   │   ├── client_test.go         # Tests for client
 │   │   └── daemon.go              # StartDaemon, ExecRequest/Response, command execution, validateCommand
 │   └── version/
 │       └── version.go             # Version, CommitHash (set via ldflags)
