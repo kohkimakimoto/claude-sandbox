@@ -26,6 +26,7 @@ func newApp() *cli.Command {
 		InitGlobalCommand,
 		ProfileCommand,
 		ClaudeCommand,
+		UnboxexecCommand,
 	}
 
 	app.Action = func(ctx context.Context, cmd *cli.Command) error {
