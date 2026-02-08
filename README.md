@@ -4,7 +4,9 @@ A wrapper around the `claude` command to run it in a sandboxed environment using
 
 > [!NOTE]
 > v2 is a full rewrite from a shell script to Go. This enables single binary distribution and integrated process management.
-> 
+>
+> **v2 is currently under active development and may introduce breaking changes without notice.**
+>
 > Key changes from v1:
 >
 > - **Reimplemented in Go** — No more shell script. Everything is a single compiled binary.
