@@ -9,6 +9,8 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -34,7 +36,9 @@ const defaultTimeout = 60 // seconds
 // StartDaemon starts a Unix Domain Socket server that accepts command execution
 // requests. It runs in a goroutine and stops when ctx is cancelled.
 // The socket file is cleaned up on shutdown.
-func StartDaemon(ctx context.Context, sockPath string) error {
+// allowedCommands specifies regex patterns that the command string must match.
+// If allowedCommands is empty, all commands are rejected.
+func StartDaemon(ctx context.Context, sockPath string, allowedCommands []*regexp.Regexp) error {
 	// Remove stale socket file if it exists
 	os.Remove(sockPath)
 
@@ -61,7 +65,7 @@ func StartDaemon(ctx context.Context, sockPath string) error {
 				}
 				continue
 			}
-			go handleConnection(ctx, conn)
+			go handleConnection(ctx, conn, allowedCommands)
 		}
 	}()
 
@@ -75,7 +79,7 @@ func StartDaemon(ctx context.Context, sockPath string) error {
 }
 
 // handleConnection processes a single request on the connection.
-func handleConnection(ctx context.Context, conn net.Conn) {
+func handleConnection(ctx context.Context, conn net.Conn, allowedCommands []*regexp.Regexp) {
 	defer conn.Close()
 
 	var req ExecRequest
@@ -85,14 +89,39 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 		return
 	}
 
-	resp := executeCommand(ctx, &req)
+	resp := executeCommand(ctx, &req, allowedCommands)
 	json.NewEncoder(conn).Encode(resp)
 }
 
+// validateCommand checks whether the command is allowed by the configured patterns.
+// It joins the command and args with spaces, then checks against each pattern.
+func validateCommand(req *ExecRequest, allowedCommands []*regexp.Regexp) error {
+	if len(allowedCommands) == 0 {
+		return fmt.Errorf("command not allowed: no allowed_commands configured")
+	}
+
+	cmdStr := req.Command
+	if len(req.Args) > 0 {
+		cmdStr = cmdStr + " " + strings.Join(req.Args, " ")
+	}
+
+	for _, re := range allowedCommands {
+		if re.MatchString(cmdStr) {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("command not allowed: %q does not match any allowed pattern", cmdStr)
+}
+
 // executeCommand runs the requested command and returns the response.
-func executeCommand(ctx context.Context, req *ExecRequest) ExecResponse {
+func executeCommand(ctx context.Context, req *ExecRequest, allowedCommands []*regexp.Regexp) ExecResponse {
 	if req.Command == "" {
 		return ExecResponse{Error: "command is required"}
+	}
+
+	if err := validateCommand(req, allowedCommands); err != nil {
+		return ExecResponse{Error: err.Error()}
 	}
 
 	timeout := req.Timeout

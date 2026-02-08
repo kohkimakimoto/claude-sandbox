@@ -19,6 +19,26 @@ Implemented in Go for single binary distribution and integrated process manageme
 - Communication via Unix Domain Socket (`/tmp/claude-sandbox-unboxexec-{PID}.sock`)
 - Socket path is passed to Claude Code via `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` environment variable
 
+### Configuration File
+
+- TOML configuration file for controlling unboxexec command restrictions
+- Config file resolution: project-specific (`.claude/sandbox.toml`) → global (`~/.claude/sandbox.toml`)
+- The project-specific config takes precedence over the global config
+- If neither exists, an empty config is used (all unboxexec commands are rejected)
+
+```toml
+# .claude/sandbox.toml or ~/.claude/sandbox.toml
+
+[unboxexec]
+# Regex patterns for allowed commands.
+# The command + args joined by spaces is matched against each pattern.
+# If any pattern matches, the command is allowed.
+# If empty or not configured, all commands are rejected.
+allowed_commands = [
+    "^playwright",
+]
+```
+
 ## Architecture
 
 ```
@@ -77,11 +97,13 @@ claude-sandbox/
 │   │   ├── init_global.go         # InitGlobalCommand — create global sandbox profile
 │   │   ├── profile.go             # ProfileCommand — print evaluated profile
 │   │   └── help.go                # RootHelpTemplate, HelpTemplate
+│   ├── config/
+│   │   └── config.go              # Config struct, Load(), CompileAllowedCommands()
 │   ├── sandbox/
 │   │   ├── env.go                 # GetWorkdir, GetClaudeBin, SocketPath
 │   │   └── profile.go             # BuildProfile, profile templates
 │   ├── unboxexec/
-│   │   └── daemon.go              # StartDaemon, ExecRequest/Response, command execution
+│   │   └── daemon.go              # StartDaemon, ExecRequest/Response, command execution, validateCommand
 │   └── version/
 │       └── version.go             # Version, CommitHash (set via ldflags)
 ├── Makefile
@@ -93,7 +115,8 @@ claude-sandbox/
 
 ```
 cmd/claude-sandbox  → command
-                      command  → sandbox, unboxexec, version
+                      command  → config, sandbox, unboxexec, version
+                      config   (no internal dependencies)
                       sandbox  (no internal dependencies)
                       unboxexec (no internal dependencies)
                       version  (no internal dependencies)
@@ -114,7 +137,7 @@ No circular dependencies.
 
 - macOS only (`sandbox-exec` is macOS-specific)
 - Requires Go 1.24+
-- External dependency: `github.com/urfave/cli/v3`
+- External dependencies: `github.com/urfave/cli/v3`, `github.com/BurntSushi/toml`
 - `make build` — Build dev binary to `.dev/build/dev/claude-sandbox`
 - `make test` — Run tests
 - `make format` — Format source code

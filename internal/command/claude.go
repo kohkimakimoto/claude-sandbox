@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"runtime"
 
+	"github.com/kohkimakimoto/claude-sandbox/internal/config"
 	"github.com/kohkimakimoto/claude-sandbox/internal/sandbox"
 	"github.com/kohkimakimoto/claude-sandbox/internal/unboxexec"
 	"github.com/urfave/cli/v3"
@@ -19,14 +20,19 @@ var ClaudeCommand = &cli.Command{
 	SkipFlagParsing:    true,
 	CustomHelpTemplate: HelpTemplate,
 	Action: func(ctx context.Context, cmd *cli.Command) error {
-		return RunClaudeAction(ctx, cmd, cmd.Args().Slice())
+		// When invoked as a subcommand, load config
+		cfg, err := config.Load(config.ResolveConfigPath())
+		if err != nil {
+			return err
+		}
+		return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
 	},
 }
 
 // RunClaudeAction executes claude inside a macOS sandbox using sandbox-exec.
 // It starts an internal daemon for sandbox-external command execution,
 // then runs sandbox-exec as a child process.
-func RunClaudeAction(ctx context.Context, cmd *cli.Command, args []string) error {
+func RunClaudeAction(ctx context.Context, cmd *cli.Command, args []string, cfg *config.Config) error {
 	if runtime.GOOS != "darwin" {
 		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
@@ -41,12 +47,18 @@ func RunClaudeAction(ctx context.Context, cmd *cli.Command, args []string) error
 	home, _ := os.UserHomeDir()
 	claudeBin := sandbox.GetClaudeBin()
 
+	// Compile allowed command patterns
+	allowedCommands, err := config.CompileAllowedCommands(cfg.Unboxexec.AllowedCommands)
+	if err != nil {
+		return fmt.Errorf("failed to compile allowed_commands: %w", err)
+	}
+
 	// Start the daemon for sandbox-external command execution
 	sockPath := sandbox.SocketPath()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if err := unboxexec.StartDaemon(ctx, sockPath); err != nil {
+	if err := unboxexec.StartDaemon(ctx, sockPath, allowedCommands); err != nil {
 		return fmt.Errorf("failed to start daemon: %w", err)
 	}
 

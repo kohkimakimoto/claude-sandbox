@@ -173,7 +173,6 @@ Claude Code running inside the sandbox can send JSON requests to this socket to 
 |---|---|
 | `CLAUDE_SANDBOX_WORKDIR` | Override working directory for sandbox execution |
 | `CLAUDE_SANDBOX_CLAUDE_BIN` | Override path to the `claude` binary |
-| `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Unix socket path for the unboxexec daemon (set automatically) |
 
 ## License
 

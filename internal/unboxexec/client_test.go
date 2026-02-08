@@ -4,8 +4,14 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 )
+
+// allowAll returns a permissive pattern that matches any command.
+func allowAll() []*regexp.Regexp {
+	return []*regexp.Regexp{regexp.MustCompile(".*")}
+}
 
 func TestSendRequest(t *testing.T) {
 	sockPath := filepath.Join(t.TempDir(), "test.sock")
@@ -13,7 +19,7 @@ func TestSendRequest(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := StartDaemon(ctx, sockPath); err != nil {
+	if err := StartDaemon(ctx, sockPath, allowAll()); err != nil {
 		t.Fatalf("failed to start daemon: %v", err)
 	}
 
@@ -42,7 +48,7 @@ func TestSendRequestWithDir(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := StartDaemon(ctx, sockPath); err != nil {
+	if err := StartDaemon(ctx, sockPath, allowAll()); err != nil {
 		t.Fatalf("failed to start daemon: %v", err)
 	}
 
@@ -68,7 +74,7 @@ func TestSendRequestWithEnv(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := StartDaemon(ctx, sockPath); err != nil {
+	if err := StartDaemon(ctx, sockPath, allowAll()); err != nil {
 		t.Fatalf("failed to start daemon: %v", err)
 	}
 
@@ -95,7 +101,7 @@ func TestSendRequestNoCommand(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := StartDaemon(ctx, sockPath); err != nil {
+	if err := StartDaemon(ctx, sockPath, allowAll()); err != nil {
 		t.Fatalf("failed to start daemon: %v", err)
 	}
 
@@ -116,5 +122,79 @@ func TestSendRequestConnectionError(t *testing.T) {
 	})
 	if err == nil {
 		t.Error("expected error for nonexistent socket")
+	}
+}
+
+func TestCommandAllowed(t *testing.T) {
+	sockPath := filepath.Join(t.TempDir(), "test.sock")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	allowed := []*regexp.Regexp{regexp.MustCompile("^echo")}
+	if err := StartDaemon(ctx, sockPath, allowed); err != nil {
+		t.Fatalf("failed to start daemon: %v", err)
+	}
+
+	resp, err := SendRequest(sockPath, &ExecRequest{
+		Command: "echo",
+		Args:    []string{"hello"},
+	})
+	if err != nil {
+		t.Fatalf("SendRequest failed: %v", err)
+	}
+
+	if resp.Error != "" {
+		t.Errorf("expected no error, got: %s", resp.Error)
+	}
+	if resp.Stdout != "hello\n" {
+		t.Errorf("expected stdout %q, got %q", "hello\n", resp.Stdout)
+	}
+}
+
+func TestCommandRejected(t *testing.T) {
+	sockPath := filepath.Join(t.TempDir(), "test.sock")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	allowed := []*regexp.Regexp{regexp.MustCompile("^playwright")}
+	if err := StartDaemon(ctx, sockPath, allowed); err != nil {
+		t.Fatalf("failed to start daemon: %v", err)
+	}
+
+	resp, err := SendRequest(sockPath, &ExecRequest{
+		Command: "echo",
+		Args:    []string{"hello"},
+	})
+	if err != nil {
+		t.Fatalf("SendRequest failed: %v", err)
+	}
+
+	if resp.Error == "" {
+		t.Error("expected error for rejected command")
+	}
+}
+
+func TestCommandRejectedNoPatterns(t *testing.T) {
+	sockPath := filepath.Join(t.TempDir(), "test.sock")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := StartDaemon(ctx, sockPath, nil); err != nil {
+		t.Fatalf("failed to start daemon: %v", err)
+	}
+
+	resp, err := SendRequest(sockPath, &ExecRequest{
+		Command: "echo",
+		Args:    []string{"hello"},
+	})
+	if err != nil {
+		t.Fatalf("SendRequest failed: %v", err)
+	}
+
+	if resp.Error == "" {
+		t.Error("expected error for empty allowed_commands")
 	}
 }

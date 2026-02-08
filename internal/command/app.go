@@ -3,15 +3,21 @@ package command
 import (
 	"context"
 
+	"github.com/kohkimakimoto/claude-sandbox/internal/config"
 	"github.com/kohkimakimoto/claude-sandbox/internal/version"
 	"github.com/urfave/cli/v3"
 )
 
 func Run(args []string) error {
-	return newApp().Run(context.Background(), args)
+	cfg, err := config.Load(config.ResolveConfigPath())
+	if err != nil {
+		return err
+	}
+
+	return newApp(cfg).Run(context.Background(), args)
 }
 
-func newApp() *cli.Command {
+func newApp(cfg *config.Config) *cli.Command {
 	app := &cli.Command{
 		Name:                          "claude-sandbox",
 		HideVersion:                   true,
@@ -36,11 +42,11 @@ func newApp() *cli.Command {
 				return cli.ShowAppHelp(cmd)
 			}
 			// If args are present and not a builtin command, run claude with all args
-			return RunClaudeAction(ctx, cmd, cmd.Args().Slice())
+			return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
 		}
 
 		// No args: run claude without arguments
-		return RunClaudeAction(ctx, cmd, nil)
+		return RunClaudeAction(ctx, cmd, nil, cfg)
 	}
 
 	return app
