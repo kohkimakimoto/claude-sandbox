@@ -1,22 +1,23 @@
-package internal
+package command
 
 import (
 	"context"
 	"fmt"
 	"os"
 
+	"github.com/kohkimakimoto/claude-sandbox/internal/sandbox"
 	"github.com/urfave/cli/v3"
 )
 
 var ProfileCommand = &cli.Command{
 	Name:               "profile",
 	Usage:              "Print evaluated profile and exit",
-	CustomHelpTemplate: helpTemplate,
+	CustomHelpTemplate: HelpTemplate,
 	Action:             profileAction,
 }
 
 func profileAction(ctx context.Context, cmd *cli.Command) error {
-	profilePath, cleanup, err := buildProfile()
+	profilePath, cleanup, err := sandbox.BuildProfile()
 	if err != nil {
 		return err
 	}

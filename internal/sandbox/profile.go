@@ -1,4 +1,4 @@
-package internal
+package sandbox
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-// defaultProfile is the built-in sandbox profile used when no custom profile is found.
-const defaultProfile = `;; This is a default built-in sandbox profile for claude-sandbox.
+// DefaultProfile is the built-in sandbox profile used when no custom profile is found.
+const DefaultProfile = `;; This is a default built-in sandbox profile for claude-sandbox.
 (version 1)
 
 (allow default)
@@ -44,8 +44,8 @@ const defaultProfile = `;; This is a default built-in sandbox profile for claude
 )
 `
 
-// projectProfileTemplate is the template for project-specific sandbox profiles.
-const projectProfileTemplate = `;; This is a project-specific sandbox profile for claude-sandbox.
+// ProjectProfileTemplate is the template for project-specific sandbox profiles.
+const ProjectProfileTemplate = `;; This is a project-specific sandbox profile for claude-sandbox.
 ;; You can customize this file to suit your project's needs.
 ;; see https://github.com/kohkimakimoto/claude-sandbox
 (version 1)
@@ -84,8 +84,8 @@ const projectProfileTemplate = `;; This is a project-specific sandbox profile fo
 )
 `
 
-// globalProfileTemplate is the template for global sandbox profiles.
-const globalProfileTemplate = `;; This is a global sandbox profile for claude-sandbox.
+// GlobalProfileTemplate is the template for global sandbox profiles.
+const GlobalProfileTemplate = `;; This is a global sandbox profile for claude-sandbox.
 ;; You can customize this file to suit your needs.
 ;; see https://github.com/kohkimakimoto/claude-sandbox
 (version 1)
@@ -124,13 +124,13 @@ const globalProfileTemplate = `;; This is a global sandbox profile for claude-sa
 )
 `
 
-// buildProfile creates a temporary file with the sandbox profile and returns
+// BuildProfile creates a temporary file with the sandbox profile and returns
 // its path and a cleanup function. The profile is resolved in this order:
 // 1. .claude/sandbox.sb in the working directory (project-specific)
 // 2. $HOME/.claude/sandbox.sb (global)
 // 3. Built-in default profile
-func buildProfile() (profilePath string, cleanup func(), err error) {
-	workdir := getWorkdir()
+func BuildProfile() (profilePath string, cleanup func(), err error) {
+	workdir := GetWorkdir()
 	home, _ := os.UserHomeDir()
 
 	// Determine profile content
@@ -150,7 +150,7 @@ func buildProfile() (profilePath string, cleanup func(), err error) {
 			return "", nil, fmt.Errorf("failed to read profile %s: %w", globalProfile, err)
 		}
 	} else {
-		content = []byte(defaultProfile)
+		content = []byte(DefaultProfile)
 	}
 
 	// Write to temporary file

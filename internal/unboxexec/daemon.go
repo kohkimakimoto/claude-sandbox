@@ -1,4 +1,4 @@
-package internal
+package unboxexec
 
 import (
 	"bytes"
@@ -31,10 +31,10 @@ type ExecResponse struct {
 
 const defaultTimeout = 60 // seconds
 
-// startDaemon starts a Unix Domain Socket server that accepts command execution
+// StartDaemon starts a Unix Domain Socket server that accepts command execution
 // requests. It runs in a goroutine and stops when ctx is cancelled.
 // The socket file is cleaned up on shutdown.
-func startDaemon(ctx context.Context, sockPath string) error {
+func StartDaemon(ctx context.Context, sockPath string) error {
 	// Remove stale socket file if it exists
 	os.Remove(sockPath)
 

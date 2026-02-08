@@ -1,4 +1,4 @@
-package internal
+package command
 
 import (
 	"context"
@@ -6,13 +6,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kohkimakimoto/claude-sandbox/internal/sandbox"
 	"github.com/urfave/cli/v3"
 )
 
 var InitGlobalCommand = &cli.Command{
 	Name:               "init-global",
 	Usage:              "Create $HOME/.claude/sandbox.sb file if it doesn't exist",
-	CustomHelpTemplate: helpTemplate,
+	CustomHelpTemplate: HelpTemplate,
 	Action:             initGlobalAction,
 }
 
@@ -29,7 +30,7 @@ func initGlobalAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(sandboxFile, []byte(globalProfileTemplate), 0644); err != nil {
+	if err := os.WriteFile(sandboxFile, []byte(sandbox.GlobalProfileTemplate), 0644); err != nil {
 		return fmt.Errorf("failed to write profile: %w", err)
 	}
 

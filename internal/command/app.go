@@ -1,8 +1,9 @@
-package internal
+package command
 
 import (
 	"context"
 
+	"github.com/kohkimakimoto/claude-sandbox/internal/version"
 	"github.com/urfave/cli/v3"
 )
 
@@ -14,10 +15,10 @@ func newApp() *cli.Command {
 	app := &cli.Command{
 		Name:                          "claude-sandbox",
 		HideVersion:                   true,
-		Version:                       Version,
+		Version:                       version.Version,
 		Copyright:                     "Copyright (c) Kohki Makimoto",
 		SkipFlagParsing:               true,
-		CustomRootCommandHelpTemplate: rootHelpTemplate,
+		CustomRootCommandHelpTemplate: RootHelpTemplate,
 	}
 
 	app.Commands = []*cli.Command{
@@ -34,11 +35,11 @@ func newApp() *cli.Command {
 				return cli.ShowAppHelp(cmd)
 			}
 			// If args are present and not a builtin command, run claude with all args
-			return runClaudeAction(ctx, cmd, cmd.Args().Slice())
+			return RunClaudeAction(ctx, cmd, cmd.Args().Slice())
 		}
 
 		// No args: run claude without arguments
-		return runClaudeAction(ctx, cmd, nil)
+		return RunClaudeAction(ctx, cmd, nil)
 	}
 
 	return app

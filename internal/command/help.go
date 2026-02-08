@@ -1,6 +1,7 @@
-package internal
+package command
 
-const rootHelpTemplate = `Usage: claude-sandbox [<command>]|[claude [<args of claude command...>]]
+// RootHelpTemplate is the help template for the root command.
+const RootHelpTemplate = `Usage: claude-sandbox [<command>]|[claude [<args of claude command...>]]
 
 A wrapper around the claude command to run it in a sandboxed environment.
 
@@ -51,7 +52,8 @@ Version: {{ .Version }}
 {{template "copyrightTemplate" .}}
 `
 
-const helpTemplate = `Usage: {{template "usageTemplate" .}}
+// HelpTemplate is the help template for subcommands.
+const HelpTemplate = `Usage: {{template "usageTemplate" .}}
 
 {{template "helpNameTemplate" .}}
 

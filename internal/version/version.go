@@ -1,4 +1,4 @@
-package internal
+package version
 
 var (
 	// Version is the version of this software.

@@ -1,4 +1,4 @@
-package internal
+package command
 
 import (
 	"context"
@@ -6,18 +6,19 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kohkimakimoto/claude-sandbox/internal/sandbox"
 	"github.com/urfave/cli/v3"
 )
 
 var InitCommand = &cli.Command{
 	Name:               "init",
 	Usage:              "Create .claude/sandbox.sb file if it doesn't exist",
-	CustomHelpTemplate: helpTemplate,
+	CustomHelpTemplate: HelpTemplate,
 	Action:             initAction,
 }
 
 func initAction(ctx context.Context, cmd *cli.Command) error {
-	workdir := getWorkdir()
+	workdir := sandbox.GetWorkdir()
 	sandboxFile := filepath.Join(workdir, ".claude", "sandbox.sb")
 
 	if _, err := os.Stat(sandboxFile); err == nil {
@@ -29,7 +30,7 @@ func initAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(sandboxFile, []byte(projectProfileTemplate), 0644); err != nil {
+	if err := os.WriteFile(sandboxFile, []byte(sandbox.ProjectProfileTemplate), 0644); err != nil {
 		return fmt.Errorf("failed to write profile: %w", err)
 	}
 

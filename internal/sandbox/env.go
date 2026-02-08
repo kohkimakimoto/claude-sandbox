@@ -1,4 +1,4 @@
-package internal
+package sandbox
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 )
 
-// getWorkdir returns the working directory for sandbox execution.
+// GetWorkdir returns the working directory for sandbox execution.
 // It uses CLAUDE_SANDBOX_WORKDIR if set, otherwise falls back to the current directory.
-func getWorkdir() string {
+func GetWorkdir() string {
 	if v := os.Getenv("CLAUDE_SANDBOX_WORKDIR"); v != "" {
 		return v
 	}
@@ -17,9 +17,9 @@ func getWorkdir() string {
 	return wd
 }
 
-// getClaudeBin returns the path to the claude binary.
+// GetClaudeBin returns the path to the claude binary.
 // It checks CLAUDE_SANDBOX_CLAUDE_BIN, then searches PATH, then falls back to ~/.claude/local/claude.
-func getClaudeBin() string {
+func GetClaudeBin() string {
 	if v := os.Getenv("CLAUDE_SANDBOX_CLAUDE_BIN"); v != "" {
 		return v
 	}
@@ -37,7 +37,7 @@ func getClaudeBin() string {
 	return "claude"
 }
 
-// socketPath returns the path for the daemon's Unix Domain Socket.
-func socketPath() string {
-	return filepath.Join(os.TempDir(), fmt.Sprintf("claude-sandbox-unbox-exec-%d.sock", os.Getpid()))
+// SocketPath returns the path for the daemon's Unix Domain Socket.
+func SocketPath() string {
+	return filepath.Join(os.TempDir(), fmt.Sprintf("claude-sandbox-unboxexec-%d.sock", os.Getpid()))
 }
