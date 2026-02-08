@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# dev
+/.dev
+
+# dotenv, direnv
+.env
+.envrc
+
+!.gitkeep
