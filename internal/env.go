@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -34,4 +35,9 @@ func getClaudeBin() string {
 	}
 
 	return "claude"
+}
+
+// socketPath returns the path for the daemon's Unix Domain Socket.
+func socketPath() string {
+	return filepath.Join(os.TempDir(), fmt.Sprintf("claude-sandbox-unbox-exec-%d.sock", os.Getpid()))
 }
