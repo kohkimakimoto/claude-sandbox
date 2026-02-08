@@ -2,7 +2,7 @@
 
 A wrapper around the `claude` command to run it in a sandboxed environment using macOS's `sandbox-exec`.
 
-It also includes a built-in daemon ([unboxexec](#sandbox-external-command-execution)) that allows Claude Code running inside the sandbox to execute specific commands outside the sandbox via a Unix Domain Socket.
+It also includes a mechanism ([unboxexec](#sandbox-external-command-execution)) that allows Claude Code running inside the sandbox to execute specific commands outside the sandbox.
 
 ## Installation
 
@@ -140,32 +140,73 @@ You can use these parameters in your sandbox profile like this:
 
 Some tools (e.g. Playwright) cannot run inside the macOS sandbox because they use their own sandboxing mechanisms, which conflict with the nested sandbox environment.
 
-`claude-sandbox` includes a built-in daemon called **unboxexec** that runs outside the sandbox as a goroutine. When `claude-sandbox` starts, the daemon listens on a Unix Domain Socket and the socket path is passed to Claude Code via the `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` environment variable.
+`claude-sandbox` includes a built-in mechanism called **unboxexec** that allows commands to be executed outside the sandbox. When `claude-sandbox` starts, it launches an internal daemon that accepts command execution requests from inside the sandbox.
 
-Claude Code running inside the sandbox can send JSON requests to this socket to execute commands outside the sandbox.
+### The `unboxexec` Subcommand
 
-### Protocol
+The `claude-sandbox unboxexec` subcommand is used from inside the sandbox to execute commands outside of it.
 
-**Request**:
-```json
-{
-  "command": "playwright",
-  "args": ["install", "chromium"],
-  "env": {"KEY": "value"},
-  "dir": "/path/to/workdir",
-  "timeout": 300
-}
+```bash
+claude-sandbox unboxexec [options] -- <command> [args...]
 ```
 
-**Response**:
-```json
-{
-  "stdout": "...",
-  "stderr": "...",
-  "exit_code": 0,
-  "error": ""
-}
+#### Options
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--dir` | `-C` | Specify the working directory for the command |
+| `--timeout` | `-t` | Timeout in seconds (default: 60) |
+| `--env` | `-e` | Environment variable in `KEY=VALUE` format (can be specified multiple times) |
+
+#### Examples
+
+```bash
+# Execute a command outside the sandbox
+claude-sandbox unboxexec -- echo "hello from outside"
+
+# Execute with a specified working directory
+claude-sandbox unboxexec --dir /tmp -- ls -la
+
+# Execute with an extended timeout
+claude-sandbox unboxexec --timeout 300 -- long-running-command
+
+# Execute with environment variables
+claude-sandbox unboxexec --env API_KEY=secret --env DEBUG=1 -- my-command
 ```
+
+### Command Restrictions
+
+By default, all commands executed via `unboxexec` are **rejected** unless explicitly allowed by a configuration file. See [Configuration File](#configuration-file) for details.
+
+## Configuration File
+
+`claude-sandbox` supports a TOML configuration file for controlling behavior. The configuration file is resolved in the following order:
+
+1. `.claude/sandbox.toml` in the current working directory (project-specific)
+2. `~/.claude/sandbox.toml` (global)
+
+The project-specific configuration takes precedence over the global configuration. If neither file exists, the default configuration is used (all `unboxexec` commands are rejected).
+
+### Example
+
+```toml
+# .claude/sandbox.toml or ~/.claude/sandbox.toml
+
+[unboxexec]
+# Regex patterns for allowed commands.
+# The command and its arguments are joined by spaces, and the resulting string
+# is matched against each pattern. If any pattern matches, the command is allowed.
+# If empty or not configured, all commands are rejected.
+allowed_commands = [
+    "^playwright",
+]
+```
+
+### `[unboxexec]` Section
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `allowed_commands` | Array of strings | Regex patterns that define which commands are allowed to execute via `unboxexec`. The command and arguments are joined with spaces and matched against each pattern. If any pattern matches, the command is permitted. |
 
 ## Environment Variables
 
