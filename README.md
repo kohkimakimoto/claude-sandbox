@@ -15,9 +15,7 @@ A wrapper around the `claude` command to run it in a sandboxed environment using
 
 ## Installation
 
-Download the binary from the [GitHub Releases](https://github.com/kohkimakimoto/claude-sandbox/releases) page and place it in your `PATH`.
-
-Or build from source:
+Build from source:
 
 ```bash
 git clone https://github.com/kohkimakimoto/claude-sandbox.git
