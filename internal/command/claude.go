@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/kohkimakimoto/claude-sandbox/internal/config"
-	"github.com/kohkimakimoto/claude-sandbox/internal/sandbox"
-	"github.com/kohkimakimoto/claude-sandbox/internal/unboxexec"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/config"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/sandbox"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/unboxexec"
 	"github.com/urfave/cli/v3"
 )
 

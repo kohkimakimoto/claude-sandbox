@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kohkimakimoto/claude-sandbox/internal/sandbox"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/sandbox"
 	"github.com/urfave/cli/v3"
 )
 

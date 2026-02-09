@@ -3,8 +3,8 @@ package command
 import (
 	"context"
 
-	"github.com/kohkimakimoto/claude-sandbox/internal/config"
-	"github.com/kohkimakimoto/claude-sandbox/internal/version"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/config"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/version"
 	"github.com/urfave/cli/v3"
 )
 

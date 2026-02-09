@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kohkimakimoto/claude-sandbox/internal/unboxexec"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/unboxexec"
 	"github.com/urfave/cli/v3"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kohkimakimoto/claude-sandbox/internal/command"
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/command"
 )
 
 func main() {
