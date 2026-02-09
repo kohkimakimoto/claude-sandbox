@@ -1,6 +1,6 @@
 # claude-sandbox
 
-A wrapper around the `claude` command to run it in a sandboxed environment using macOS's `sandbox-exec`.
+A wrapper around Claude Code (`claude` command) to run it in a sandboxed environment using macOS's `sandbox-exec`.
 
 > [!NOTE]
 > v2 is a full rewrite from a shell script to Go. This enables single binary distribution and integrated process management.
