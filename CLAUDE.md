@@ -118,6 +118,8 @@ This protocol is only used for sandbox-bypass command execution (unboxexec); the
 
 | Variable | Description |
 |---|---|
+| `CLAUDE_SANDBOX` | Set to `1` to indicate the process is running inside the sandbox (set by claude-sandbox for child process) |
+| `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Unix socket path for communicating with the unboxexec daemon (set by claude-sandbox for child process) |
 | `CLAUDE_SANDBOX_WORKDIR` | Working directory used for sandbox execution (set by claude-sandbox for child process) |
 | `CLAUDE_SANDBOX_CLAUDE_BIN` | Path to claude binary (set by claude-sandbox for child process) |
 
