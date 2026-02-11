@@ -10,19 +10,48 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+// projectConfigTemplate generates the template for project-specific sandbox.toml.
+func projectConfigTemplate() string {
+	return `# Project-specific configuration for claude-sandbox.
+# See https://github.com/kohkimakimoto/claude-sandbox
+
+[sandbox]
+# Sandbox profile for sandbox-exec.
+# If not set, the built-in default profile is used.
+# profile = '''
+` + sandbox.CommentedDefaultProfile() + `
+# '''
+
+# Override working directory (optional).
+# workdir = "/path/to/workdir"
+
+# Override claude binary path (optional).
+# claude_bin = "/path/to/claude"
+
+[unboxexec]
+# Regex patterns for allowed commands.
+# The command + args joined by spaces is matched against each pattern.
+# If any pattern matches, the command is allowed.
+# If empty or not configured, all commands are rejected.
+allowed_commands = [
+    # "^playwright-cli",
+]
+`
+}
+
 var InitCommand = &cli.Command{
 	Name:               "init",
-	Usage:              "Create .claude/sandbox.sb file if it doesn't exist",
+	Usage:              "Create .claude/sandbox.toml file if it doesn't exist",
 	CustomHelpTemplate: HelpTemplate,
 	Action:             initAction,
 }
 
 func initAction(ctx context.Context, cmd *cli.Command) error {
-	workdir := sandbox.GetWorkdir()
-	sandboxFile := filepath.Join(workdir, ".claude", "sandbox.sb")
+	workdir := sandbox.GetWorkdir("")
+	configFile := filepath.Join(workdir, ".claude", "sandbox.toml")
 
-	if _, err := os.Stat(sandboxFile); err == nil {
-		return fmt.Errorf("sandbox profile file already exists: %s", sandboxFile)
+	if _, err := os.Stat(configFile); err == nil {
+		return fmt.Errorf("config file already exists: %s", configFile)
 	}
 
 	// Create .claude directory if it doesn't exist
@@ -30,10 +59,10 @@ func initAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(sandboxFile, []byte(sandbox.ProjectProfileTemplate), 0644); err != nil {
-		return fmt.Errorf("failed to write profile: %w", err)
+	if err := os.WriteFile(configFile, []byte(projectConfigTemplate()), 0644); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	fmt.Fprintf(cmd.Writer, "Created sandbox profile file: %s\n", sandboxFile)
+	fmt.Fprintf(cmd.Writer, "Created config file: %s\n", configFile)
 	return nil
 }

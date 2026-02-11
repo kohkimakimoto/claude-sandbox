@@ -49,87 +49,85 @@ Commands or options that conflict with claude-sandbox's own can be passed using 
 claude-sandbox claude -h
 ```
 
-### Viewing the Sandbox Profile
+## Configuration File
 
-By default, `claude-sandbox` uses a built-in sandbox profile that restricts file system write access to the current working directory, Claude Code configuration, and temporary directories.
-You can view the actual profile being used:
+All settings are managed through a single TOML configuration file: `.claude/sandbox.toml`. The configuration file is resolved in the following order:
 
-```bash
-claude-sandbox profile
-```
+1. `.claude/sandbox.toml` in the current working directory (project-specific)
+2. `~/.claude/sandbox.toml` (global)
 
-Example output:
+The project-specific configuration takes precedence over the global configuration. If neither file exists, built-in defaults are used.
 
-```scheme
-;; This is a default built-in sandbox profile for claude-sandbox.
-(version 1)
+### Creating a Configuration File
 
-(allow default)
-
-(deny file-write*)
-(allow file-write*
-    ;; Working directory
-    (subpath (param "WORKDIR"))
-
-    ;; Claude Code
-    (regex (string-append "^" (param "HOME") "/\\.claude"))
-
-    ;; Keychain access for Claude Code credentials
-    (subpath (string-append (param "HOME") "/Library/Keychains"))
-
-    ;; Temporary directories and files
-    (subpath "/tmp")
-    (subpath "/var/folders")
-    (subpath "/private/tmp")
-    (subpath "/private/var/folders")
-
-    ;; Home directory
-    (subpath (string-append (param "HOME") "/.npm"))
-    (subpath (string-append (param "HOME") "/.cache"))
-    (subpath (string-append (param "HOME") "/Library/Caches"))
-    (regex (string-append "^" (param "HOME") "/\\.viminfo"))
-
-    ;; devices
-    (literal "/dev/stdout")
-    (literal "/dev/stderr")
-    (literal "/dev/null")
-    (literal "/dev/dtracehelper")
-    (regex #"^/dev/tty*")
-)
-```
-
-The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. Even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations.
-
-## Configuring Sandbox Profiles
-
-To customize the sandbox environment, you can create a sandbox profile. There are two types of profiles:
-
-### Project-Specific Profile
-
-Create a project-specific sandbox profile that applies only to the current project:
+Create a project-specific configuration:
 
 ```bash
 claude-sandbox init
 ```
 
-This creates `.claude/sandbox.sb` in your current directory.
-You can then edit this file to customize the sandbox permissions for your project.
+This creates `.claude/sandbox.toml` in your current directory.
 
-### Global Profile
-
-Create a global sandbox profile that applies to all projects:
+Create a global configuration:
 
 ```bash
 claude-sandbox init-global
 ```
 
-This creates `~/.claude/sandbox.sb`.
+This creates `~/.claude/sandbox.toml`.
 
-**Profile Priority**: Project-specific profiles take precedence over global profiles. If neither exists, a built-in default profile is used.
+### Example
 
-### Parameters
+```toml
+# .claude/sandbox.toml or ~/.claude/sandbox.toml
 
-The profile uses parameters that are passed from claude-sandbox automatically:
+[sandbox]
+# Sandbox profile for sandbox-exec.
+# If not set, the built-in default profile is used.
+profile = '''
+(version 1)
+(allow default)
+(deny file-write*)
+(allow file-write*
+    (subpath (param "WORKDIR"))
+    (regex (string-append "^" (param "HOME") "/\\.claude"))
+    (subpath "/tmp")
+)
+'''
+
+# Override working directory (optional).
+# workdir = "/path/to/workdir"
+
+# Override claude binary path (optional).
+# claude_bin = "/path/to/claude"
+
+[unboxexec]
+# Regex patterns for allowed commands.
+# The command and its arguments are joined by spaces, and the resulting string
+# is matched against each pattern. If any pattern matches, the command is allowed.
+# If empty or not configured, all commands are rejected.
+allowed_commands = [
+    "^playwright-cli",
+]
+```
+
+### `[sandbox]` Section
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `profile` | String | The sandbox-exec profile content. If not set, a built-in default profile is used. Use TOML multiline literal strings (`'''`) for readability. |
+| `workdir` | String | Override the working directory for sandbox execution. If not set, the current directory is used. |
+| `claude_bin` | String | Override the path to the `claude` binary. If not set, it is resolved from PATH. |
+
+### `[unboxexec]` Section
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `allowed_commands` | Array of strings | Regex patterns that define which commands are allowed to execute via `unboxexec`. The command and arguments are joined with spaces and matched against each pattern. If any pattern matches, the command is permitted. |
+
+### Sandbox Profile Parameters
+
+The sandbox profile uses parameters that are passed from claude-sandbox automatically:
 
 - `WORKDIR`: The current working directory where claude-sandbox is executed
 - `HOME`: The user's home directory
@@ -142,6 +140,16 @@ You can use these parameters in your sandbox profile like this:
     (subpath (string-append (param "HOME") "/.claude"))
 )
 ```
+
+### Viewing the Sandbox Profile
+
+You can view the actual profile being used:
+
+```bash
+claude-sandbox profile
+```
+
+The sandbox uses macOS's `sandbox-exec` (Apple Seatbelt) technology. Even if Claude Code tried to execute a command like `rm -rf /usr/bin` or modify system configuration files, the sandbox would block these operations.
 
 ## Sandbox-External Command Execution
 
@@ -183,44 +191,18 @@ claude-sandbox unboxexec --env API_KEY=secret --env DEBUG=1 -- my-command
 
 ### Command Restrictions
 
-By default, all commands executed via `unboxexec` are **rejected** unless explicitly allowed by a configuration file. See [Configuration File](#configuration-file) for details.
-
-## Configuration File
-
-`claude-sandbox` supports a TOML configuration file for controlling behavior. The configuration file is resolved in the following order:
-
-1. `.claude/sandbox.toml` in the current working directory (project-specific)
-2. `~/.claude/sandbox.toml` (global)
-
-The project-specific configuration takes precedence over the global configuration. If neither file exists, the default configuration is used (all `unboxexec` commands are rejected).
-
-### Example
-
-```toml
-# .claude/sandbox.toml or ~/.claude/sandbox.toml
-
-[unboxexec]
-# Regex patterns for allowed commands.
-# The command and its arguments are joined by spaces, and the resulting string
-# is matched against each pattern. If any pattern matches, the command is allowed.
-# If empty or not configured, all commands are rejected.
-allowed_commands = [
-    "^playwright-cli",
-]
-```
-
-### `[unboxexec]` Section
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `allowed_commands` | Array of strings | Regex patterns that define which commands are allowed to execute via `unboxexec`. The command and arguments are joined with spaces and matched against each pattern. If any pattern matches, the command is permitted. |
+By default, all commands executed via `unboxexec` are **rejected** unless explicitly allowed by the `[unboxexec]` section in the configuration file.
 
 ## Environment Variables
 
+The following environment variables are set by claude-sandbox and available to the Claude Code process running inside the sandbox.
+
 | Variable | Description |
 |---|---|
-| `CLAUDE_SANDBOX_WORKDIR` | Override working directory for sandbox execution |
-| `CLAUDE_SANDBOX_CLAUDE_BIN` | Override path to the `claude` binary |
+| `CLAUDE_SANDBOX` | Set to `1` inside the sandbox |
+| `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Path to the unboxexec daemon socket |
+| `CLAUDE_SANDBOX_WORKDIR` | Working directory used for sandbox execution |
+| `CLAUDE_SANDBOX_CLAUDE_BIN` | Path to the claude binary used |
 
 ## License
 

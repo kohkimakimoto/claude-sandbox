@@ -8,20 +8,20 @@ import (
 )
 
 // GetWorkdir returns the working directory for sandbox execution.
-// It uses CLAUDE_SANDBOX_WORKDIR if set, otherwise falls back to the current directory.
-func GetWorkdir() string {
-	if v := os.Getenv("CLAUDE_SANDBOX_WORKDIR"); v != "" {
-		return v
+// If configWorkdir is non-empty, it is used. Otherwise falls back to the current directory.
+func GetWorkdir(configWorkdir string) string {
+	if configWorkdir != "" {
+		return configWorkdir
 	}
 	wd, _ := os.Getwd()
 	return wd
 }
 
 // GetClaudeBin returns the path to the claude binary.
-// It checks CLAUDE_SANDBOX_CLAUDE_BIN, then searches PATH, then falls back to ~/.claude/local/claude.
-func GetClaudeBin() string {
-	if v := os.Getenv("CLAUDE_SANDBOX_CLAUDE_BIN"); v != "" {
-		return v
+// If configClaudeBin is non-empty, it is used. Otherwise searches PATH, then falls back to ~/.claude/local/claude.
+func GetClaudeBin(configClaudeBin string) string {
+	if configClaudeBin != "" {
+		return configClaudeBin
 	}
 
 	if p, err := exec.LookPath("claude"); err == nil {

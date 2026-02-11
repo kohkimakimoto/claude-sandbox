@@ -7,28 +7,29 @@ A wrapper around the claude command to run it in a sandboxed environment.
 
 Builtin commands:{{template "visibleCommandCategoryTemplate" .}}
 
-Profile:
-   The profile file defines sandbox environment.
-   This is a sandbox-exec (Apple Seatbelt) profile.
-   claude-sandbox looks for profile files in the following order:
+Configuration:
+   All settings are managed through a single TOML configuration file.
+   claude-sandbox looks for config files in the following order:
 
-   1. .claude/sandbox.sb (project-specific profile)
-   2. $HOME/.claude/sandbox.sb (global profile)
+   1. .claude/sandbox.toml (project-specific config)
+   2. $HOME/.claude/sandbox.toml (global config)
 
-   The project-specific profile takes precedence over the global profile.
-   If neither exists, claude-sandbox will run its built-in default profile.
+   The project-specific config takes precedence over the global config.
+   If neither exists, built-in defaults are used.
 
-   You can use parameters in the profile file using (param "NAME") syntax.
-   The following parameters are provided by claude-sandbox:
+   The [sandbox] section can contain:
+   - profile: sandbox-exec profile content (if not set, built-in default is used)
+   - workdir: override working directory
+   - claude_bin: override path to claude binary
 
-   - WORKDIR: The current working directory where claude-sandbox is executed.
-   - HOME: The user's home directory.
+   The [unboxexec] section can contain:
+   - allowed_commands: regex patterns for commands allowed via unboxexec
 
 Example Usage:
-   # Create project-specific sandbox profile
+   # Create project-specific config file
    $ claude-sandbox init
 
-   # Create global sandbox profile
+   # Create global config file
    $ claude-sandbox init-global
 
    # Print the evaluated sandbox profile

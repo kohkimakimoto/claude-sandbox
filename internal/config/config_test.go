@@ -36,6 +36,98 @@ allowed_commands = [
 	}
 }
 
+func TestLoadConfigWithSandboxSection(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.toml")
+	content := `
+[sandbox]
+profile = "(version 1)\n(allow default)"
+workdir = "/tmp/myworkdir"
+claude_bin = "/usr/local/bin/claude"
+
+[unboxexec]
+allowed_commands = [
+    "^playwright-cli",
+]
+`
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	if cfg.Sandbox.Profile != "(version 1)\n(allow default)" {
+		t.Errorf("expected profile %q, got %q", "(version 1)\n(allow default)", cfg.Sandbox.Profile)
+	}
+	if cfg.Sandbox.Workdir != "/tmp/myworkdir" {
+		t.Errorf("expected workdir %q, got %q", "/tmp/myworkdir", cfg.Sandbox.Workdir)
+	}
+	if cfg.Sandbox.ClaudeBin != "/usr/local/bin/claude" {
+		t.Errorf("expected claude_bin %q, got %q", "/usr/local/bin/claude", cfg.Sandbox.ClaudeBin)
+	}
+	if len(cfg.Unboxexec.AllowedCommands) != 1 {
+		t.Fatalf("expected 1 allowed_commands, got %d", len(cfg.Unboxexec.AllowedCommands))
+	}
+}
+
+func TestLoadConfigWithMultilineProfile(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.toml")
+	content := `
+[sandbox]
+profile = '''
+(version 1)
+(allow default)
+(deny file-write*)
+'''
+`
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	// TOML multiline literal strings (''') strip the first newline
+	expected := "(version 1)\n(allow default)\n(deny file-write*)\n"
+	if cfg.Sandbox.Profile != expected {
+		t.Errorf("expected profile %q, got %q", expected, cfg.Sandbox.Profile)
+	}
+}
+
+func TestLoadConfigSandboxDefaults(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.toml")
+	content := `
+[unboxexec]
+allowed_commands = ["^echo"]
+`
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	// Sandbox fields should be zero values when not specified
+	if cfg.Sandbox.Profile != "" {
+		t.Errorf("expected empty profile, got %q", cfg.Sandbox.Profile)
+	}
+	if cfg.Sandbox.Workdir != "" {
+		t.Errorf("expected empty workdir, got %q", cfg.Sandbox.Workdir)
+	}
+	if cfg.Sandbox.ClaudeBin != "" {
+		t.Errorf("expected empty claude_bin, got %q", cfg.Sandbox.ClaudeBin)
+	}
+}
+
 func TestLoadEmptyPath(t *testing.T) {
 	cfg, err := Load("")
 	if err != nil {

@@ -11,7 +11,21 @@ import (
 
 // Config represents the claude-sandbox configuration.
 type Config struct {
+	Sandbox   SandboxConfig   `toml:"sandbox"`
 	Unboxexec UnboxexecConfig `toml:"unboxexec"`
+}
+
+// SandboxConfig holds settings for the sandbox environment.
+type SandboxConfig struct {
+	// Profile is the sandbox-exec profile content.
+	// If empty, the built-in default profile is used.
+	Profile string `toml:"profile"`
+	// Workdir overrides the working directory for sandbox execution.
+	// If empty, the current directory is used.
+	Workdir string `toml:"workdir"`
+	// ClaudeBin overrides the path to the claude binary.
+	// If empty, PATH search is used.
+	ClaudeBin string `toml:"claude_bin"`
 }
 
 // UnboxexecConfig holds settings for the unboxexec daemon.
