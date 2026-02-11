@@ -3,7 +3,8 @@
 ## Overview
 
 A wrapper tool to safely run Claude Code in a sandboxed environment on macOS.
-Implemented in Go for single binary distribution and integrated process management.
+Implemented in Go.
+Runs a background daemon (goroutine) to support sandbox-bypass execution.
 
 ## Features
 
@@ -35,7 +36,7 @@ Implemented in Go for single binary distribution and integrated process manageme
 # If any pattern matches, the command is allowed.
 # If empty or not configured, all commands are rejected.
 allowed_commands = [
-    "^playwright",
+    "^playwright-cli",
 ]
 ```
 
@@ -59,7 +60,10 @@ The `claude-sandbox` process starts the unboxexec daemon as a goroutine, then
 spawns `sandbox-exec` as a child process. When claude exits, the context is
 cancelled and the daemon goroutine shuts down.
 
-### Communication Protocol
+### Unboxexec Communication Protocol
+
+The unboxexec daemon communicates with its clients via JSON over the Unix Domain Socket.
+This protocol is only used for sandbox-bypass command execution (unboxexec); the main sandboxed execution of Claude Code does not involve this protocol.
 
 **Request**:
 ```json
@@ -82,69 +86,30 @@ cancelled and the daemon goroutine shuts down.
 }
 ```
 
-## Directory Structure
+## Package Structure
 
-```
-claude-sandbox/
-├── .github/
-│   └── workflows/
-│       └── test.yml               # GitHub Actions test workflow
-├── cmd/
-│   └── claude-sandbox/
-│       └── main.go                # Entry point
-├── internal/
-│   ├── command/
-│   │   ├── app.go                 # Run(), newApp() — CLI application setup
-│   │   ├── claude.go              # ClaudeCommand, RunClaudeAction
-│   │   ├── help.go                # RootHelpTemplate, HelpTemplate
-│   │   ├── init.go                # InitCommand — create project sandbox profile
-│   │   ├── init_global.go         # InitGlobalCommand — create global sandbox profile
-│   │   ├── profile.go             # ProfileCommand — print evaluated profile
-│   │   └── unboxexec.go           # UnboxexecCommand — frontend CLI for unboxexec
-│   ├── config/
-│   │   ├── config.go              # Config struct, Load(), CompileAllowedCommands()
-│   │   └── config_test.go         # Tests for config
-│   ├── sandbox/
-│   │   ├── env.go                 # GetWorkdir, GetClaudeBin, SocketPath
-│   │   └── profile.go             # BuildProfile, profile templates
-│   ├── unboxexec/
-│   │   ├── client.go              # SendRequest — client for unboxexec daemon
-│   │   ├── client_test.go         # Tests for client
-│   │   └── daemon.go              # StartDaemon, ExecRequest/Response, command execution, validateCommand
-│   └── version/
-│       └── version.go             # Version, CommitHash (set via ldflags)
-├── Makefile
-├── go.mod
-└── go.sum
-```
+| Package | Description |
+|---|---|
+| `cmd/claude-sandbox` | Entry point (`main.go`) |
+| `internal/command` | CLI application setup, subcommand definitions (claude, init, profile, unboxexec, etc.) |
+| `internal/config` | TOML configuration loading and allowed-command compilation |
+| `internal/sandbox` | Sandbox profile building, environment variable helpers |
+| `internal/unboxexec` | Unboxexec daemon (server) and client |
+| `internal/version` | Version and commit hash (set via `-ldflags` at build time) |
 
-### Package Dependencies
-
-```
-cmd/claude-sandbox  → command
-                      command  → config, sandbox, unboxexec, version
-                      config   (no internal dependencies)
-                      sandbox  (no internal dependencies)
-                      unboxexec (no internal dependencies)
-                      version  (no internal dependencies)
-```
-
-No circular dependencies.
+`cmd/claude-sandbox` depends on `internal/command`, which depends on all other `internal/*` packages. The `internal/*` packages have no circular dependencies among themselves.
 
 ## Environment Variables
 
 | Variable | Description |
 |---|---|
-| `CLAUDE_SANDBOX` | Set to `1` when running inside claude-sandbox (set automatically) |
 | `CLAUDE_SANDBOX_WORKDIR` | Override working directory for sandbox execution |
 | `CLAUDE_SANDBOX_CLAUDE_BIN` | Override path to claude binary |
-| `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Unix socket path for unboxexec daemon (set automatically) |
 
 ## Development
 
 - macOS only (`sandbox-exec` is macOS-specific)
-- Requires Go 1.24+
-- External dependencies: `github.com/urfave/cli/v3`, `github.com/BurntSushi/toml`
+- Go version and external dependencies are defined in `go.mod`
 - `make build` — Build dev binary to `.dev/build/dev/claude-sandbox`
 - `make test` — Run tests
 - `make format` — Format source code
