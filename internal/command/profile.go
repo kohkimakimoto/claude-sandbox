@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kohkimakimoto/claude-sandbox/v2/internal/config"
 	"github.com/kohkimakimoto/claude-sandbox/v2/internal/sandbox"
 	"github.com/urfave/cli/v3"
 )
@@ -17,7 +18,12 @@ var ProfileCommand = &cli.Command{
 }
 
 func profileAction(ctx context.Context, cmd *cli.Command) error {
-	profilePath, cleanup, err := sandbox.BuildProfile()
+	cfg, err := config.Load(config.ResolveConfigPath())
+	if err != nil {
+		return err
+	}
+
+	profilePath, cleanup, err := sandbox.BuildProfile(cfg.Sandbox.Profile)
 	if err != nil {
 		return err
 	}

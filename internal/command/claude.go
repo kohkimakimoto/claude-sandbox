@@ -37,15 +37,15 @@ func RunClaudeAction(ctx context.Context, cmd *cli.Command, args []string, cfg *
 		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
 
-	profilePath, cleanup, err := sandbox.BuildProfile()
+	profilePath, cleanup, err := sandbox.BuildProfile(cfg.Sandbox.Profile)
 	if err != nil {
 		return err
 	}
 	defer cleanup()
 
-	workdir := sandbox.GetWorkdir()
+	workdir := sandbox.GetWorkdir(cfg.Sandbox.Workdir)
 	home, _ := os.UserHomeDir()
-	claudeBin := sandbox.GetClaudeBin()
+	claudeBin := sandbox.GetClaudeBin(cfg.Sandbox.ClaudeBin)
 
 	// Compile allowed command patterns
 	allowedCommands, err := config.CompileAllowedCommands(cfg.Unboxexec.AllowedCommands)
@@ -73,7 +73,12 @@ func RunClaudeAction(ctx context.Context, cmd *cli.Command, args []string, cfg *
 
 	// Run sandbox-exec as a child process
 	eCmd := exec.CommandContext(ctx, "sandbox-exec", sandboxExecArgs...)
-	eCmd.Env = append(os.Environ(), "CLAUDE_SANDBOX=1", "CLAUDE_SANDBOX_UNBOXEXEC_SOCK="+sockPath)
+	eCmd.Env = append(os.Environ(),
+		"CLAUDE_SANDBOX=1",
+		"CLAUDE_SANDBOX_UNBOXEXEC_SOCK="+sockPath,
+		"CLAUDE_SANDBOX_WORKDIR="+workdir,
+		"CLAUDE_SANDBOX_CLAUDE_BIN="+claudeBin,
+	)
 	eCmd.Stdin = os.Stdin
 	eCmd.Stdout = os.Stdout
 	eCmd.Stderr = os.Stderr

@@ -11,7 +11,7 @@ Runs a background daemon (goroutine) to support sandbox-bypass execution.
 ### Sandboxed Execution
 
 - Execute Claude Code using macOS `sandbox-exec`
-- Sandbox profile resolution: project-specific (`.claude/sandbox.sb`) → global (`$HOME/.claude/sandbox.sb`) → built-in default
+- Sandbox profile is configured via `[sandbox].profile` in `sandbox.toml`; if not set, built-in default is used
 - Transparent argument passing to Claude Code
 
 ### Sandbox-External Command Execution (unboxexec)
@@ -22,13 +22,28 @@ Runs a background daemon (goroutine) to support sandbox-bypass execution.
 
 ### Configuration File
 
-- TOML configuration file for controlling unboxexec command restrictions
+- Single TOML configuration file (`sandbox.toml`) for all settings
 - Config file resolution: project-specific (`.claude/sandbox.toml`) → global (`~/.claude/sandbox.toml`)
 - The project-specific config takes precedence over the global config
-- If neither exists, an empty config is used (all unboxexec commands are rejected)
+- If neither exists, built-in defaults are used
 
 ```toml
 # .claude/sandbox.toml or ~/.claude/sandbox.toml
+
+[sandbox]
+# Sandbox profile for sandbox-exec (multiline literal string).
+# If not set, the built-in default profile is used.
+# profile = '''
+# (version 1)
+# (allow default)
+# ...
+# '''
+
+# Override working directory (optional).
+# workdir = "/path/to/workdir"
+
+# Override claude binary path (optional).
+# claude_bin = "/path/to/claude"
 
 [unboxexec]
 # Regex patterns for allowed commands.
@@ -103,8 +118,8 @@ This protocol is only used for sandbox-bypass command execution (unboxexec); the
 
 | Variable | Description |
 |---|---|
-| `CLAUDE_SANDBOX_WORKDIR` | Override working directory for sandbox execution |
-| `CLAUDE_SANDBOX_CLAUDE_BIN` | Override path to claude binary |
+| `CLAUDE_SANDBOX_WORKDIR` | Working directory used for sandbox execution (set by claude-sandbox for child process) |
+| `CLAUDE_SANDBOX_CLAUDE_BIN` | Path to claude binary (set by claude-sandbox for child process) |
 
 ## Development
 

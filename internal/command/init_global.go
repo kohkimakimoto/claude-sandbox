@@ -10,19 +10,48 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+// globalConfigTemplate generates the template for global sandbox.toml.
+func globalConfigTemplate() string {
+	return `# Global configuration for claude-sandbox.
+# See https://github.com/kohkimakimoto/claude-sandbox
+
+[sandbox]
+# Sandbox profile for sandbox-exec.
+# If not set, the built-in default profile is used.
+# profile = '''
+` + sandbox.CommentedDefaultProfile() + `
+# '''
+
+# Override working directory (optional).
+# workdir = "/path/to/workdir"
+
+# Override claude binary path (optional).
+# claude_bin = "/path/to/claude"
+
+[unboxexec]
+# Regex patterns for allowed commands.
+# The command + args joined by spaces is matched against each pattern.
+# If any pattern matches, the command is allowed.
+# If empty or not configured, all commands are rejected.
+allowed_commands = [
+    # "^playwright-cli",
+]
+`
+}
+
 var InitGlobalCommand = &cli.Command{
 	Name:               "init-global",
-	Usage:              "Create $HOME/.claude/sandbox.sb file if it doesn't exist",
+	Usage:              "Create $HOME/.claude/sandbox.toml file if it doesn't exist",
 	CustomHelpTemplate: HelpTemplate,
 	Action:             initGlobalAction,
 }
 
 func initGlobalAction(ctx context.Context, cmd *cli.Command) error {
 	home, _ := os.UserHomeDir()
-	sandboxFile := filepath.Join(home, ".claude", "sandbox.sb")
+	configFile := filepath.Join(home, ".claude", "sandbox.toml")
 
-	if _, err := os.Stat(sandboxFile); err == nil {
-		return fmt.Errorf("global sandbox profile file already exists: %s", sandboxFile)
+	if _, err := os.Stat(configFile); err == nil {
+		return fmt.Errorf("global config file already exists: %s", configFile)
 	}
 
 	// Create .claude directory if it doesn't exist
@@ -30,10 +59,10 @@ func initGlobalAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(sandboxFile, []byte(sandbox.GlobalProfileTemplate), 0644); err != nil {
-		return fmt.Errorf("failed to write profile: %w", err)
+	if err := os.WriteFile(configFile, []byte(globalConfigTemplate()), 0644); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	fmt.Fprintf(cmd.Writer, "Created global sandbox profile file: %s\n", sandboxFile)
+	fmt.Fprintf(cmd.Writer, "Created global config file: %s\n", configFile)
 	return nil
 }
