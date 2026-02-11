@@ -6,15 +6,8 @@
 A wrapper around Claude Code (`claude` command) to run it in a sandboxed environment using macOS's `sandbox-exec`.
 
 > [!NOTE]
-> v2 is a full rewrite from a shell script to Go. This enables single binary distribution and integrated process management.
->
+> v2 is a full rewrite from a shell script to Go. This enables single binary distribution and supports command execution outside the sandbox.
 > **v2 is currently under active development and may introduce breaking changes without notice.**
->
-> Key changes from v1:
->
-> - **Reimplemented in Go** — No more shell script. Everything is a single compiled binary.
-> - **Sandbox-external command execution (unboxexec)** — A built-in daemon that lets Claude Code selectively bypass the sandbox for tools that require it (e.g. Playwright). Commands are restricted via a TOML configuration file.
-> - **Configuration file support** — Project-specific or global `.claude/sandbox.toml` to control allowed unboxexec commands.
 
 ## Installation
 
