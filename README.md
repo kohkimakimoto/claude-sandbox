@@ -5,6 +5,34 @@
 
 A wrapper around Claude Code (`claude` command) to run it in a sandboxed environment using macOS's `sandbox-exec`.
 
+Table of Contents:
+- [Why Not the Built-in Sandbox?](#why-not-the-built-in-sandbox)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration File](#configuration-file)
+  - [Creating a Configuration File](#creating-a-configuration-file)
+  - [Example](#example)
+  - [`[sandbox]` Section](#sandbox-section)
+  - [`[unboxexec]` Section](#unboxexec-section)
+  - [Sandbox Profile Parameters](#sandbox-profile-parameters)
+  - [Viewing the Sandbox Profile](#viewing-the-sandbox-profile)
+- [Sandbox-External Command Execution](#sandbox-external-command-execution)
+  - [The `unboxexec` Subcommand](#the-unboxexec-subcommand)
+    - [Options](#options)
+    - [Examples](#examples)
+  - [Command Restrictions](#command-restrictions)
+- [Environment Variables](#environment-variables)
+- [License](#license)
+
+## Why Not the Built-in Sandbox?
+
+Claude Code provides a [built-in sandboxing feature](https://code.claude.com/docs/en/sandboxing) with filesystem and network isolation. I tried it, but in my workflow and environment it wasn't the best fit:
+
+- Unexpected restrictions kept blocking legitimate operations, and I spent a lot of time troubleshooting and working around them.
+- I didn't need network isolation at all, so it only added complexity without benefit.
+
+What I actually needed was simpler: **restrict file writes to the current directory** and **explicitly allow exceptions** when needed. So I built this tool — minimal, predictable sandboxing with straightforward configuration.
+
 > [!NOTE]
 > v2 is a full rewrite from a shell script to Go. This enables single binary distribution and supports command execution outside the sandbox.
 > **v2 is currently under active development and may introduce breaking changes without notice.**
