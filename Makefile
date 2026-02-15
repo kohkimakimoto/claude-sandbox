@@ -2,10 +2,9 @@
 
 SHELL := bash
 PATH := $(CURDIR)/.dev/go-tools/bin:$(PATH)
-COMMIT_HASH := $(shell git rev-parse HEAD)
+COMMIT_HASH := $(shell git rev-parse --short HEAD)
 
-VERSION := 2.0.0
-BUILD_LDFLAGS = "-s -w -X github.com/kohkimakimoto/claude-sandbox/v2/internal/version.CommitHash=$(COMMIT_HASH) -X github.com/kohkimakimoto/claude-sandbox/v2/internal/version.Version=$(VERSION)"
+BUILD_LDFLAGS = "-s -w -X github.com/kohkimakimoto/claude-sandbox/v2/internal/version.CommitHash=$(COMMIT_HASH)"
 
 # Load .env file if it exists.
 ifneq (,$(wildcard ./.env))
