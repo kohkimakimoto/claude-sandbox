@@ -9,6 +9,8 @@ A wrapper around Claude Code (`claude` command) to run it in a sandboxed environ
 Table of Contents:
 - [Why Not the Built-in Sandbox?](#why-not-the-built-in-sandbox)
 - [Installation](#installation)
+  - [Homebrew](#homebrew)
+  - [Build from source](#build-from-source)
 - [Usage](#usage)
 - [Configuration File](#configuration-file)
   - [Creating a Configuration File](#creating-a-configuration-file)
@@ -39,7 +41,13 @@ What I actually needed was simpler: **restrict file writes to the current direct
 
 ## Installation
 
-Build from source:
+### Homebrew
+
+```bash
+brew install kohkimakimoto/tap/claude-sandbox
+```
+
+### Build from source
 
 ```bash
 git clone https://github.com/kohkimakimoto/claude-sandbox.git
