@@ -28,8 +28,6 @@ setup: ## Setup development environment
 	@echo "==> Setting up development environment..."
 	@mkdir -p $(CURDIR)/.dev/go-tools
 	@export GOPATH=$(CURDIR)/.dev/go-tools && \
-		go install github.com/Songmu/goxz/cmd/goxz@latest && \
-		go install github.com/tcnksm/ghr@latest && \
 		go install github.com/axw/gocov/gocov@latest && \
 		go install github.com/matm/gocov-html/cmd/gocov-html@latest
 	@export GOPATH=$(CURDIR)/.dev/go-tools && go clean -modcache && rm -rf $(CURDIR)/.dev/go-tools/pkg
@@ -51,11 +49,6 @@ build: ## Build dev binary
 build-release: ## Build release binary
 	@mkdir -p .dev/build/release
 	@CGO_ENABLED=0 go build -ldflags=$(BUILD_LDFLAGS) -trimpath -o .dev/build/release/claude-sandbox ./cmd/claude-sandbox
-
-.PHONY: build-dist
-build-dist: ## Build binaries for distribution (macOS only)
-	@mkdir -p .dev/build/dist
-	@CGO_ENABLED=0 goxz -n claude-sandbox -os=darwin -static -build-ldflags=$(BUILD_LDFLAGS) -trimpath -d=.dev/build/dist ./cmd/claude-sandbox
 
 .PHONY: build-clean
 build-clean: ## Clean up build artifacts
