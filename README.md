@@ -1,6 +1,7 @@
 # claude-sandbox
 
 [![test](https://github.com/kohkimakimoto/claude-sandbox/actions/workflows/test.yml/badge.svg)](https://github.com/kohkimakimoto/claude-sandbox/actions/workflows/test.yml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/kohkimakimoto/claude-sandbox)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kohkimakimoto/claude-sandbox/blob/main/LICENSE)
 
 A wrapper around Claude Code (`claude` command) to run it in a sandboxed environment using macOS's `sandbox-exec`.
