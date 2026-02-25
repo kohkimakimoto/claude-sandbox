@@ -24,6 +24,7 @@ Table of Contents:
     - [Options](#options)
     - [Examples](#examples)
   - [Command Restrictions](#command-restrictions)
+  - [Architecture](#architecture)
 - [Environment Variables](#environment-variables)
 - [License](#license)
 
@@ -226,6 +227,33 @@ claude-sandbox unboxexec --env API_KEY=secret --env DEBUG=1 -- my-command
 ### Command Restrictions
 
 By default, all commands executed via `unboxexec` are **rejected** unless explicitly allowed by the `[unboxexec]` section in the configuration file.
+
+### Architecture
+
+The following diagram shows how sandbox-external command execution is implemented internally.
+
+```mermaid
+graph TD
+    A["claude-sandbox"]
+
+    subgraph daemon["unboxexec daemon"]
+        B["Listen on Unix socket"]
+        C["Execute commands outside sandbox"]
+        B --> C
+    end
+
+    subgraph sandboxed["sandbox-exec"]
+        E["claude"]
+        F["invoke claude-sandbox unboxexec"]
+        E --> F
+    end
+
+    A -- "starts as goroutine" --> daemon
+    A -- "spawns as child process" --> sandboxed
+    F -- "JSON request/response over Unix socket" --> B
+```
+
+The `claude-sandbox` process starts the unboxexec daemon as a goroutine, then spawns `sandbox-exec` as a child process. Claude Code running inside the sandbox communicates with the daemon via a Unix Domain Socket to execute commands outside the sandbox.
 
 ## Environment Variables
 
