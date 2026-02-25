@@ -226,7 +226,7 @@ claude-sandbox unboxexec --env API_KEY=secret --env DEBUG=1 -- my-command
 
 ### Command Restrictions
 
-By default, all commands executed via `unboxexec` are **rejected** unless explicitly allowed by the `[unboxexec]` section in the configuration file.
+By default, all commands executed via `unboxexec` are **rejected** unless explicitly allowed by the `[unboxexec]` section in the configuration file. See the [`[unboxexec]` Section](#unboxexec-section) for details.
 
 ### Architecture
 
