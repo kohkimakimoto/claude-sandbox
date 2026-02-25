@@ -26,6 +26,7 @@ Table of Contents:
   - [Command Restrictions](#command-restrictions)
   - [Architecture](#architecture)
 - [Environment Variables](#environment-variables)
+- [Recommended Context Configuration](#recommended-context-configuration)
 - [License](#license)
 
 ## Why Not the Built-in Sandbox?
@@ -265,6 +266,12 @@ The following environment variables are set by claude-sandbox and available to t
 | `CLAUDE_SANDBOX_UNBOXEXEC_SOCK` | Path to the unboxexec daemon socket |
 | `CLAUDE_SANDBOX_WORKDIR` | Working directory used for sandbox execution |
 | `CLAUDE_SANDBOX_CLAUDE_BIN` | Path to the claude binary used |
+
+## Recommended Context Configuration
+
+To ensure Claude Code understands the sandbox environment, copy the contents of [rules/sandbox.md](rules/sandbox.md) into your `.claude/rules/` directory (project-level) or `~/.claude/rules/` (user-level). The rule file is just an example and you may need to adjust it based on your specific use case and the commands you want to allow outside the sandbox.
+
+For more details on how rules work, see the [Claude Code memory documentation](https://code.claude.com/docs/en/memory).
 
 ## License
 
