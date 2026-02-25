@@ -38,9 +38,6 @@ Claude Code provides a [built-in sandboxing feature](https://code.claude.com/doc
 
 What I actually needed was simpler: **restrict file writes to the current directory** and **explicitly allow exceptions** when needed. So I built this tool — minimal, predictable sandboxing with straightforward configuration.
 
-> [!NOTE]
-> v2 is a full rewrite from a shell script to Go. This enables single binary distribution and supports command execution outside the sandbox.
-
 ## Installation
 
 ### Homebrew
