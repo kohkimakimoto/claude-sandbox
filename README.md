@@ -157,6 +157,8 @@ allowed_commands = [
 |-----|------|-------------|
 | `allowed_commands` | Array of strings | Regex patterns that define which commands are allowed to execute via `unboxexec`. The command and arguments are joined with spaces and matched against each pattern. If any pattern matches, the command is permitted. |
 
+For more details, see the [Sandbox-External Command Execution](#sandbox-external-command-execution) section below.
+
 ### Sandbox Profile Parameters
 
 The sandbox profile uses parameters that are passed from claude-sandbox automatically:
