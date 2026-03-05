@@ -11,7 +11,7 @@ import (
 func TestInitCommand(t *testing.T) {
 	t.Run("creates .claude/sandbox.toml in the working directory", func(t *testing.T) {
 		dir := testChdirTemp(t)
-		
+
 		cmd := NewInitCommand()
 		cmd.Writer = &bytes.Buffer{}
 
