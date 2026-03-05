@@ -39,11 +39,13 @@ allowed_commands = [
 `
 }
 
-var InitCommand = &cli.Command{
-	Name:               "init",
-	Usage:              "Create .claude/sandbox.toml file if it doesn't exist",
-	CustomHelpTemplate: HelpTemplate,
-	Action:             initAction,
+func NewInitCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "init",
+		Usage:              "Create .claude/sandbox.toml file if it doesn't exist",
+		CustomHelpTemplate: HelpTemplate,
+		Action:             initAction,
+	}
 }
 
 func initAction(ctx context.Context, cmd *cli.Command) error {

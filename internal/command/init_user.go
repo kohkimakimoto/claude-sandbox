@@ -39,21 +39,25 @@ allowed_commands = [
 `
 }
 
-// InitUserCommand creates the user-level sandbox.toml (~/.claude/sandbox.toml).
-var InitUserCommand = &cli.Command{
-	Name:               "init-user",
-	Usage:              "Create $HOME/.claude/sandbox.toml file if it doesn't exist",
-	CustomHelpTemplate: HelpTemplate,
-	Action:             initUserAction,
+// NewInitUserCommand creates the user-level sandbox.toml (~/.claude/sandbox.toml).
+func NewInitUserCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "init-user",
+		Usage:              "Create $HOME/.claude/sandbox.toml file if it doesn't exist",
+		CustomHelpTemplate: HelpTemplate,
+		Action:             initUserAction,
+	}
 }
 
-// InitGlobalCommand is kept as a backward-compatible alias for InitUserCommand.
-var InitGlobalCommand = &cli.Command{
-	Name:               "init-global",
-	Usage:              "Alias for init-user (deprecated)",
-	CustomHelpTemplate: HelpTemplate,
-	Action:             initUserAction,
-	Hidden:             true,
+// NewInitGlobalCommand is kept as a backward-compatible alias for NewInitUserCommand.
+func NewInitGlobalCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "init-global",
+		Usage:              "Alias for init-user (deprecated)",
+		CustomHelpTemplate: HelpTemplate,
+		Action:             initUserAction,
+		Hidden:             true,
+	}
 }
 
 func initUserAction(ctx context.Context, cmd *cli.Command) error {

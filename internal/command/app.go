@@ -28,12 +28,12 @@ func newApp(cfg *config.Config) *cli.Command {
 	}
 
 	app.Commands = []*cli.Command{
-		InitCommand,
-		InitUserCommand,
-		InitGlobalCommand,
-		ProfileCommand,
-		ClaudeCommand,
-		UnboxexecCommand,
+		NewInitCommand(),
+		NewInitUserCommand(),
+		NewInitGlobalCommand(),
+		NewProfileCommand(),
+		NewClaudeCommand(),
+		NewUnboxexecCommand(),
 	}
 
 	app.Action = func(ctx context.Context, cmd *cli.Command) error {

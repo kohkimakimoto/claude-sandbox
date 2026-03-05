@@ -14,19 +14,21 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-var ClaudeCommand = &cli.Command{
-	Name:               "claude",
-	Usage:              "Run the claude command in a sandboxed environment",
-	SkipFlagParsing:    true,
-	CustomHelpTemplate: HelpTemplate,
-	Action: func(ctx context.Context, cmd *cli.Command) error {
-		// When invoked as a subcommand, load merged config
-		cfg, err := config.LoadMerged()
-		if err != nil {
-			return err
-		}
-		return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
-	},
+func NewClaudeCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "claude",
+		Usage:              "Run the claude command in a sandboxed environment",
+		SkipFlagParsing:    true,
+		CustomHelpTemplate: HelpTemplate,
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			// When invoked as a subcommand, load merged config
+			cfg, err := config.LoadMerged()
+			if err != nil {
+				return err
+			}
+			return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
+		},
+	}
 }
 
 // RunClaudeAction executes claude inside a macOS sandbox using sandbox-exec.
