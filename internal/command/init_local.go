@@ -10,9 +10,11 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// projectConfigTemplate generates the template for project-specific sandbox.toml.
-func projectConfigTemplate() string {
-	return `# Project-specific configuration for claude-sandbox.
+// localConfigTemplate generates the template for local override sandbox.local.toml.
+func localConfigTemplate() string {
+	return `# Local override configuration for claude-sandbox.
+# This file is intended for personal, machine-specific settings that should
+# not be committed to version control. Add it to .gitignore.
 # See https://github.com/kohkimakimoto/claude-sandbox
 
 [sandbox]
@@ -39,21 +41,21 @@ allowed_commands = [
 `
 }
 
-func NewInitCommand() *cli.Command {
+func NewInitLocalCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "init",
-		Usage:              "Create .claude/sandbox.toml file if it doesn't exist",
+		Name:               "init-local",
+		Usage:              "Create .claude/sandbox.local.toml file if it doesn't exist",
 		CustomHelpTemplate: HelpTemplate,
-		Action:             initAction,
+		Action:             initLocalAction,
 	}
 }
 
-func initAction(ctx context.Context, cmd *cli.Command) error {
+func initLocalAction(ctx context.Context, cmd *cli.Command) error {
 	workdir := sandbox.GetWorkdir("")
-	configFile := filepath.Join(workdir, ".claude", "sandbox.toml")
+	configFile := filepath.Join(workdir, ".claude", "sandbox.local.toml")
 
 	if _, err := os.Stat(configFile); err == nil {
-		return fmt.Errorf("config file already exists: %s", configFile)
+		return fmt.Errorf("local config file already exists: %s", configFile)
 	}
 
 	// Create .claude directory if it doesn't exist
@@ -61,10 +63,10 @@ func initAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(configFile, []byte(projectConfigTemplate()), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte(localConfigTemplate()), 0644); err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	fmt.Fprintf(cmd.Writer, "Created config file: %s\n", configFile)
+	fmt.Fprintf(cmd.Writer, "Created local config file: %s\n", configFile)
 	return nil
 }

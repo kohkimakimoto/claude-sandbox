@@ -10,15 +10,17 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-var ProfileCommand = &cli.Command{
-	Name:               "profile",
-	Usage:              "Print evaluated profile and exit",
-	CustomHelpTemplate: HelpTemplate,
-	Action:             profileAction,
+func NewProfileCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "profile",
+		Usage:              "Print evaluated profile and exit",
+		CustomHelpTemplate: HelpTemplate,
+		Action:             profileAction,
+	}
 }
 
 func profileAction(ctx context.Context, cmd *cli.Command) error {
-	cfg, err := config.Load(config.ResolveConfigPath())
+	cfg, err := config.LoadMerged()
 	if err != nil {
 		return err
 	}

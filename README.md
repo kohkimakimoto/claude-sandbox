@@ -29,6 +29,7 @@ Table of Contents:
 - [Recommended Context Configuration](#recommended-context-configuration)
 - [License](#license)
 
+
 ## Why Not the Built-in Sandbox?
 
 Claude Code provides a [built-in sandboxing feature](https://code.claude.com/docs/en/sandboxing) with filesystem and network isolation. I tried it, but in my workflow and environment it wasn't the best fit:
@@ -82,12 +83,13 @@ claude-sandbox claude -h
 
 ## Configuration File
 
-All settings are managed through a single TOML configuration file: `.claude/sandbox.toml`. The configuration file is resolved in the following order:
+Settings are managed through TOML configuration files with three scopes. Each scope overrides the previous one for any field that is explicitly set:
 
-1. `.claude/sandbox.toml` in the current working directory (project-specific)
-2. `~/.claude/sandbox.toml` (global)
+1. **User**: `~/.claude/sandbox.toml` — applies to all projects for the current user
+2. **Project**: `.claude/sandbox.toml` in the working directory — project-specific settings checked into version control
+3. **Local**: `.claude/sandbox.local.toml` in the working directory — local overrides not meant to be committed (e.g. personal command allowlists)
 
-The project-specific configuration takes precedence over the global configuration. If neither file exists, built-in defaults are used.
+If no config files exist, built-in defaults are used.
 
 ### Creating a Configuration File
 
@@ -99,10 +101,18 @@ claude-sandbox init
 
 This creates `.claude/sandbox.toml` in your current directory.
 
-Create a global configuration:
+Create a local override configuration (not for version control):
 
 ```bash
-claude-sandbox init-global
+claude-sandbox init-local
+```
+
+This creates `.claude/sandbox.local.toml` in your current directory. Use this for personal or machine-specific settings that should not be committed. Add it to `.gitignore`.
+
+Create a user-level configuration:
+
+```bash
+claude-sandbox init-user
 ```
 
 This creates `~/.claude/sandbox.toml`.
@@ -110,7 +120,9 @@ This creates `~/.claude/sandbox.toml`.
 ### Example
 
 ```toml
-# .claude/sandbox.toml or ~/.claude/sandbox.toml
+# ~/.claude/sandbox.toml          (user)
+# .claude/sandbox.toml            (project)
+# .claude/sandbox.local.toml      (local overrides)
 
 [sandbox]
 # Sandbox profile for sandbox-exec.

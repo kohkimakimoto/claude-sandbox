@@ -29,8 +29,11 @@ Example Usage:
    # Create project-specific config file
    $ claude-sandbox init
 
-   # Create global config file
-   $ claude-sandbox init-global
+   # Create local override config file (not for version control)
+   $ claude-sandbox init-local
+
+   # Create user config file
+   $ claude-sandbox init-user
 
    # Print the evaluated sandbox profile
    $ claude-sandbox profile

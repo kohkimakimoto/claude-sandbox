@@ -9,7 +9,7 @@ import (
 )
 
 func Run(args []string) error {
-	cfg, err := config.Load(config.ResolveConfigPath())
+	cfg, err := config.LoadMerged()
 	if err != nil {
 		return err
 	}
@@ -28,11 +28,13 @@ func newApp(cfg *config.Config) *cli.Command {
 	}
 
 	app.Commands = []*cli.Command{
-		InitCommand,
-		InitGlobalCommand,
-		ProfileCommand,
-		ClaudeCommand,
-		UnboxexecCommand,
+		NewInitCommand(),
+		NewInitLocalCommand(),
+		NewInitUserCommand(),
+		NewInitGlobalCommand(),
+		NewProfileCommand(),
+		NewClaudeCommand(),
+		NewUnboxexecCommand(),
 	}
 
 	app.Action = func(ctx context.Context, cmd *cli.Command) error {

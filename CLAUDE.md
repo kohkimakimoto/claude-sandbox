@@ -22,13 +22,17 @@ Runs a background daemon (goroutine) to support sandbox-bypass execution.
 
 ### Configuration File
 
-- Single TOML configuration file (`sandbox.toml`) for all settings
-- Config file resolution: project-specific (`.claude/sandbox.toml`) → global (`~/.claude/sandbox.toml`)
-- The project-specific config takes precedence over the global config
-- If neither exists, built-in defaults are used
+- Three-tier TOML configuration with layered merging
+- Config resolution order (each level overrides the previous for any field that is explicitly set):
+  1. User: `~/.claude/sandbox.toml`
+  2. Project: `.claude/sandbox.toml` in working directory
+  3. Local: `.claude/sandbox.local.toml` in working directory (gitignore-friendly overrides)
+- If no config files exist, built-in defaults are used
 
 ```toml
-# .claude/sandbox.toml or ~/.claude/sandbox.toml
+# ~/.claude/sandbox.toml         (user-level)
+# .claude/sandbox.toml           (project-level)
+# .claude/sandbox.local.toml     (local overrides)
 
 [sandbox]
 # Sandbox profile for sandbox-exec (multiline literal string).
@@ -106,7 +110,7 @@ This protocol is only used for sandbox-bypass command execution (unboxexec); the
 | Package | Description |
 |---|---|
 | `cmd/claude-sandbox` | Entry point (`main.go`) |
-| `internal/command` | CLI application setup, subcommand definitions (claude, init, profile, unboxexec, etc.) |
+| `internal/command` | CLI application setup, subcommand definitions (claude, init, init-user, profile, unboxexec, etc.) |
 | `internal/config` | TOML configuration loading and allowed-command compilation |
 | `internal/sandbox` | Sandbox profile building, environment variable helpers |
 | `internal/unboxexec` | Unboxexec daemon (server) and client |

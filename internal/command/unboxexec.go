@@ -10,28 +10,30 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-var UnboxexecCommand = &cli.Command{
-	Name:               "unboxexec",
-	Usage:              "Execute a command outside the sandbox via the unboxexec daemon",
-	CustomHelpTemplate: HelpTemplate,
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "dir",
-			Aliases: []string{"C"},
-			Usage:   "Working directory for the command",
+func NewUnboxexecCommand() *cli.Command {
+	return &cli.Command{
+		Name:               "unboxexec",
+		Usage:              "Execute a command outside the sandbox via the unboxexec daemon",
+		CustomHelpTemplate: HelpTemplate,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "dir",
+				Aliases: []string{"C"},
+				Usage:   "Working directory for the command",
+			},
+			&cli.IntFlag{
+				Name:    "timeout",
+				Aliases: []string{"t"},
+				Usage:   "Timeout in seconds (default: 60)",
+			},
+			&cli.StringSliceFlag{
+				Name:    "env",
+				Aliases: []string{"e"},
+				Usage:   "Environment variable in KEY=VALUE format (can be specified multiple times)",
+			},
 		},
-		&cli.IntFlag{
-			Name:    "timeout",
-			Aliases: []string{"t"},
-			Usage:   "Timeout in seconds (default: 60)",
-		},
-		&cli.StringSliceFlag{
-			Name:    "env",
-			Aliases: []string{"e"},
-			Usage:   "Environment variable in KEY=VALUE format (can be specified multiple times)",
-		},
-	},
-	Action: unboxexecAction,
+		Action: unboxexecAction,
+	}
 }
 
 func unboxexecAction(ctx context.Context, cmd *cli.Command) error {
