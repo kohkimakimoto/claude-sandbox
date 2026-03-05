@@ -206,3 +206,291 @@ func TestCompileAllowedCommandsInvalidPattern(t *testing.T) {
 		t.Fatal("expected error for invalid regex pattern")
 	}
 }
+
+// --- mergeInto tests ---
+
+func TestMergeIntoOverridesNonEmpty(t *testing.T) {
+	dst := &Config{
+		Sandbox: SandboxConfig{
+			Profile:   "old-profile",
+			Workdir:   "/old",
+			ClaudeBin: "/old/claude",
+		},
+		Unboxexec: UnboxexecConfig{
+			AllowedCommands: []string{"^old"},
+		},
+	}
+	src := &Config{
+		Sandbox: SandboxConfig{
+			Profile:   "new-profile",
+			Workdir:   "/new",
+			ClaudeBin: "/new/claude",
+		},
+		Unboxexec: UnboxexecConfig{
+			AllowedCommands: []string{"^new"},
+		},
+	}
+	mergeInto(dst, src)
+
+	if dst.Sandbox.Profile != "new-profile" {
+		t.Errorf("expected profile %q, got %q", "new-profile", dst.Sandbox.Profile)
+	}
+	if dst.Sandbox.Workdir != "/new" {
+		t.Errorf("expected workdir %q, got %q", "/new", dst.Sandbox.Workdir)
+	}
+	if dst.Sandbox.ClaudeBin != "/new/claude" {
+		t.Errorf("expected claude_bin %q, got %q", "/new/claude", dst.Sandbox.ClaudeBin)
+	}
+	if len(dst.Unboxexec.AllowedCommands) != 1 || dst.Unboxexec.AllowedCommands[0] != "^new" {
+		t.Errorf("expected allowed_commands [^new], got %v", dst.Unboxexec.AllowedCommands)
+	}
+}
+
+func TestMergeIntoKeepsDstWhenSrcEmpty(t *testing.T) {
+	dst := &Config{
+		Sandbox: SandboxConfig{
+			Profile:   "kept-profile",
+			Workdir:   "/kept",
+			ClaudeBin: "/kept/claude",
+		},
+		Unboxexec: UnboxexecConfig{
+			AllowedCommands: []string{"^kept"},
+		},
+	}
+	src := &Config{}
+	mergeInto(dst, src)
+
+	if dst.Sandbox.Profile != "kept-profile" {
+		t.Errorf("expected profile to be kept, got %q", dst.Sandbox.Profile)
+	}
+	if dst.Sandbox.Workdir != "/kept" {
+		t.Errorf("expected workdir to be kept, got %q", dst.Sandbox.Workdir)
+	}
+	if dst.Sandbox.ClaudeBin != "/kept/claude" {
+		t.Errorf("expected claude_bin to be kept, got %q", dst.Sandbox.ClaudeBin)
+	}
+	if len(dst.Unboxexec.AllowedCommands) != 1 || dst.Unboxexec.AllowedCommands[0] != "^kept" {
+		t.Errorf("expected allowed_commands to be kept, got %v", dst.Unboxexec.AllowedCommands)
+	}
+}
+
+// --- LoadMerged tests ---
+
+// setupHome temporarily overrides HOME and creates the .claude dir.
+// Returns cleanup func.
+func setupHome(t *testing.T, dir string) func() {
+	t.Helper()
+	orig := os.Getenv("HOME")
+	if err := os.Setenv("HOME", dir); err != nil {
+		t.Fatalf("failed to set HOME: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, ".claude"), 0755); err != nil {
+		t.Fatalf("failed to create home .claude dir: %v", err)
+	}
+	return func() {
+		if err := os.Setenv("HOME", orig); err != nil {
+			t.Errorf("failed to restore HOME: %v", err)
+		}
+	}
+}
+
+func TestLoadMergedUserOnly(t *testing.T) {
+	tmpHome := t.TempDir()
+	cleanup := setupHome(t, tmpHome)
+	defer cleanup()
+
+	// Write user config
+	userCfgPath := filepath.Join(tmpHome, ".claude", "sandbox.toml")
+	if err := os.WriteFile(userCfgPath, []byte(`
+[sandbox]
+workdir = "/from-user"
+[unboxexec]
+allowed_commands = ["^user-cmd"]
+`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Change to a temp dir with no project/local configs
+	wd := t.TempDir()
+	origWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(wd); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(origWd); err != nil {
+			t.Errorf("failed to restore workdir: %v", err)
+		}
+	}()
+
+	cfg, err := LoadMerged()
+	if err != nil {
+		t.Fatalf("LoadMerged failed: %v", err)
+	}
+	if cfg.Sandbox.Workdir != "/from-user" {
+		t.Errorf("expected workdir from user config, got %q", cfg.Sandbox.Workdir)
+	}
+	if len(cfg.Unboxexec.AllowedCommands) != 1 || cfg.Unboxexec.AllowedCommands[0] != "^user-cmd" {
+		t.Errorf("expected allowed_commands from user config, got %v", cfg.Unboxexec.AllowedCommands)
+	}
+}
+
+func TestLoadMergedProjectOverridesUser(t *testing.T) {
+	tmpHome := t.TempDir()
+	cleanup := setupHome(t, tmpHome)
+	defer cleanup()
+
+	// Write user config
+	userCfgPath := filepath.Join(tmpHome, ".claude", "sandbox.toml")
+	if err := os.WriteFile(userCfgPath, []byte(`
+[sandbox]
+workdir = "/from-user"
+claude_bin = "/user/claude"
+[unboxexec]
+allowed_commands = ["^user-cmd"]
+`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Set up workdir with project config
+	wd := t.TempDir()
+	origWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(wd); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(origWd); err != nil {
+			t.Errorf("failed to restore workdir: %v", err)
+		}
+	}()
+
+	if err := os.MkdirAll(filepath.Join(wd, ".claude"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	projectCfgPath := filepath.Join(wd, ".claude", "sandbox.toml")
+	if err := os.WriteFile(projectCfgPath, []byte(`
+[sandbox]
+workdir = "/from-project"
+[unboxexec]
+allowed_commands = ["^project-cmd"]
+`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := LoadMerged()
+	if err != nil {
+		t.Fatalf("LoadMerged failed: %v", err)
+	}
+	// project overrides user workdir and allowed_commands
+	if cfg.Sandbox.Workdir != "/from-project" {
+		t.Errorf("expected workdir from project config, got %q", cfg.Sandbox.Workdir)
+	}
+	if len(cfg.Unboxexec.AllowedCommands) != 1 || cfg.Unboxexec.AllowedCommands[0] != "^project-cmd" {
+		t.Errorf("expected allowed_commands from project config, got %v", cfg.Unboxexec.AllowedCommands)
+	}
+	// user-only field is kept
+	if cfg.Sandbox.ClaudeBin != "/user/claude" {
+		t.Errorf("expected claude_bin from user config, got %q", cfg.Sandbox.ClaudeBin)
+	}
+}
+
+func TestLoadMergedLocalOverridesAll(t *testing.T) {
+	tmpHome := t.TempDir()
+	cleanup := setupHome(t, tmpHome)
+	defer cleanup()
+
+	// Write user config
+	userCfgPath := filepath.Join(tmpHome, ".claude", "sandbox.toml")
+	if err := os.WriteFile(userCfgPath, []byte(`
+[sandbox]
+workdir = "/from-user"
+[unboxexec]
+allowed_commands = ["^user-cmd"]
+`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Set up workdir with project and local configs
+	wd := t.TempDir()
+	origWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(wd); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(origWd); err != nil {
+			t.Errorf("failed to restore workdir: %v", err)
+		}
+	}()
+
+	if err := os.MkdirAll(filepath.Join(wd, ".claude"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	projectCfgPath := filepath.Join(wd, ".claude", "sandbox.toml")
+	if err := os.WriteFile(projectCfgPath, []byte(`
+[sandbox]
+workdir = "/from-project"
+[unboxexec]
+allowed_commands = ["^project-cmd"]
+`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	localCfgPath := filepath.Join(wd, ".claude", "sandbox.local.toml")
+	if err := os.WriteFile(localCfgPath, []byte(`
+[unboxexec]
+allowed_commands = ["^local-cmd"]
+`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := LoadMerged()
+	if err != nil {
+		t.Fatalf("LoadMerged failed: %v", err)
+	}
+	// local overrides allowed_commands
+	if len(cfg.Unboxexec.AllowedCommands) != 1 || cfg.Unboxexec.AllowedCommands[0] != "^local-cmd" {
+		t.Errorf("expected allowed_commands from local config, got %v", cfg.Unboxexec.AllowedCommands)
+	}
+	// project workdir is kept (local didn't set it)
+	if cfg.Sandbox.Workdir != "/from-project" {
+		t.Errorf("expected workdir from project config, got %q", cfg.Sandbox.Workdir)
+	}
+}
+
+func TestLoadMergedNoConfigsReturnsEmpty(t *testing.T) {
+	tmpHome := t.TempDir()
+	cleanup := setupHome(t, tmpHome)
+	defer cleanup()
+
+	wd := t.TempDir()
+	origWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(wd); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(origWd); err != nil {
+			t.Errorf("failed to restore workdir: %v", err)
+		}
+	}()
+
+	cfg, err := LoadMerged()
+	if err != nil {
+		t.Fatalf("LoadMerged failed: %v", err)
+	}
+	if cfg.Sandbox.Profile != "" || cfg.Sandbox.Workdir != "" || cfg.Sandbox.ClaudeBin != "" {
+		t.Errorf("expected all sandbox fields empty, got %+v", cfg.Sandbox)
+	}
+	if len(cfg.Unboxexec.AllowedCommands) != 0 {
+		t.Errorf("expected empty allowed_commands, got %v", cfg.Unboxexec.AllowedCommands)
+	}
+}

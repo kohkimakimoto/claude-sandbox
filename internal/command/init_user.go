@@ -10,9 +10,9 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// globalConfigTemplate generates the template for global sandbox.toml.
-func globalConfigTemplate() string {
-	return `# Global configuration for claude-sandbox.
+// userConfigTemplate generates the template for user-level sandbox.toml.
+func userConfigTemplate() string {
+	return `# User-level configuration for claude-sandbox.
 # See https://github.com/kohkimakimoto/claude-sandbox
 
 [sandbox]
@@ -39,19 +39,29 @@ allowed_commands = [
 `
 }
 
-var InitGlobalCommand = &cli.Command{
-	Name:               "init-global",
+// InitUserCommand creates the user-level sandbox.toml (~/.claude/sandbox.toml).
+var InitUserCommand = &cli.Command{
+	Name:               "init-user",
 	Usage:              "Create $HOME/.claude/sandbox.toml file if it doesn't exist",
 	CustomHelpTemplate: HelpTemplate,
-	Action:             initGlobalAction,
+	Action:             initUserAction,
 }
 
-func initGlobalAction(ctx context.Context, cmd *cli.Command) error {
+// InitGlobalCommand is kept as a backward-compatible alias for InitUserCommand.
+var InitGlobalCommand = &cli.Command{
+	Name:               "init-global",
+	Usage:              "Alias for init-user (deprecated)",
+	CustomHelpTemplate: HelpTemplate,
+	Action:             initUserAction,
+	Hidden:             true,
+}
+
+func initUserAction(ctx context.Context, cmd *cli.Command) error {
 	home, _ := os.UserHomeDir()
 	configFile := filepath.Join(home, ".claude", "sandbox.toml")
 
 	if _, err := os.Stat(configFile); err == nil {
-		return fmt.Errorf("global config file already exists: %s", configFile)
+		return fmt.Errorf("user config file already exists: %s", configFile)
 	}
 
 	// Create .claude directory if it doesn't exist
@@ -59,10 +69,10 @@ func initGlobalAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(configFile, []byte(globalConfigTemplate()), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte(userConfigTemplate()), 0644); err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	fmt.Fprintf(cmd.Writer, "Created global config file: %s\n", configFile)
+	fmt.Fprintf(cmd.Writer, "Created user config file: %s\n", configFile)
 	return nil
 }

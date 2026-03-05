@@ -29,8 +29,8 @@ Example Usage:
    # Create project-specific config file
    $ claude-sandbox init
 
-   # Create global config file
-   $ claude-sandbox init-global
+   # Create user config file
+   $ claude-sandbox init-user
 
    # Print the evaluated sandbox profile
    $ claude-sandbox profile

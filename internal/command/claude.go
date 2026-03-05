@@ -20,8 +20,8 @@ var ClaudeCommand = &cli.Command{
 	SkipFlagParsing:    true,
 	CustomHelpTemplate: HelpTemplate,
 	Action: func(ctx context.Context, cmd *cli.Command) error {
-		// When invoked as a subcommand, load config
-		cfg, err := config.Load(config.ResolveConfigPath())
+		// When invoked as a subcommand, load merged config
+		cfg, err := config.LoadMerged()
 		if err != nil {
 			return err
 		}

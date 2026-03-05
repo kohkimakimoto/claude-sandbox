@@ -33,25 +33,81 @@ type UnboxexecConfig struct {
 	AllowedCommands []string `toml:"allowed_commands"`
 }
 
-// ResolveConfigPath resolves the config file path in the following order:
-// 1. .claude/sandbox.toml in the working directory (project-specific)
-// 2. ~/.claude/sandbox.toml (global)
-// Returns empty string if neither exists.
-func ResolveConfigPath() string {
+// mergeInto merges non-zero fields of src into dst.
+func mergeInto(dst, src *Config) {
+	if src.Sandbox.Profile != "" {
+		dst.Sandbox.Profile = src.Sandbox.Profile
+	}
+	if src.Sandbox.Workdir != "" {
+		dst.Sandbox.Workdir = src.Sandbox.Workdir
+	}
+	if src.Sandbox.ClaudeBin != "" {
+		dst.Sandbox.ClaudeBin = src.Sandbox.ClaudeBin
+	}
+	if len(src.Unboxexec.AllowedCommands) > 0 {
+		dst.Unboxexec.AllowedCommands = src.Unboxexec.AllowedCommands
+	}
+}
+
+// ConfigPaths holds the resolved paths for each config scope.
+type ConfigPaths struct {
+	// User is the user-level config path (~/.claude/sandbox.toml).
+	User string
+	// Project is the project-level config path (.claude/sandbox.toml in workdir).
+	Project string
+	// Local is the local override config path (.claude/sandbox.local.toml in workdir).
+	Local string
+}
+
+// ResolveConfigPaths returns the paths for all three config scopes.
+// Each field is set to the path only if the file exists; otherwise it is empty.
+func ResolveConfigPaths() ConfigPaths {
 	wd, _ := os.Getwd()
 	home, _ := os.UserHomeDir()
 
+	paths := ConfigPaths{}
+
+	userConfig := filepath.Join(home, ".claude", "sandbox.toml")
+	if _, err := os.Stat(userConfig); err == nil {
+		paths.User = userConfig
+	}
+
 	projectConfig := filepath.Join(wd, ".claude", "sandbox.toml")
 	if _, err := os.Stat(projectConfig); err == nil {
-		return projectConfig
+		paths.Project = projectConfig
 	}
 
-	globalConfig := filepath.Join(home, ".claude", "sandbox.toml")
-	if _, err := os.Stat(globalConfig); err == nil {
-		return globalConfig
+	localConfig := filepath.Join(wd, ".claude", "sandbox.local.toml")
+	if _, err := os.Stat(localConfig); err == nil {
+		paths.Local = localConfig
 	}
 
-	return ""
+	return paths
+}
+
+// LoadMerged loads and merges configs from all scopes in order:
+//  1. user   (~/.claude/sandbox.toml)
+//  2. project (.claude/sandbox.toml in workdir)
+//  3. local   (.claude/sandbox.local.toml in workdir)
+//
+// Each scope overrides the previous one for any field that is explicitly set.
+func LoadMerged() (*Config, error) {
+	paths := ResolveConfigPaths()
+
+	merged := &Config{}
+
+	for _, path := range []string{paths.User, paths.Project, paths.Local} {
+		if path == "" {
+			continue
+		}
+		cfg, err := Load(path)
+		if err != nil {
+			return nil, err
+		}
+		mergeInto(merged, cfg)
+	}
+
+	return merged, nil
 }
 
 // Load reads and parses a TOML config file at the given path.

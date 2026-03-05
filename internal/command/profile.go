@@ -18,7 +18,7 @@ var ProfileCommand = &cli.Command{
 }
 
 func profileAction(ctx context.Context, cmd *cli.Command) error {
-	cfg, err := config.Load(config.ResolveConfigPath())
+	cfg, err := config.LoadMerged()
 	if err != nil {
 		return err
 	}
