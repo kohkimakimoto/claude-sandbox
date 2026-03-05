@@ -41,6 +41,13 @@ const DefaultProfile = `(version 1)
     (literal "/dev/dtracehelper")
     (regex #"^/dev/tty*")
 )
+
+;; Prevent Claude Code from modifying sandbox config files.
+(deny file-write*
+    (literal (string-append (param "HOME") "/.claude/sandbox.toml"))
+    (regex (string-append "^" (param "WORKDIR") "/\\.claude/sandbox\\.toml$"))
+    (regex (string-append "^" (param "WORKDIR") "/\\.claude/sandbox\\.local\\.toml$"))
+)
 `
 
 // CommentedDefaultProfile returns the DefaultProfile with each line prefixed by "# ".
