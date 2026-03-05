@@ -101,6 +101,14 @@ claude-sandbox init
 
 This creates `.claude/sandbox.toml` in your current directory.
 
+Create a local override configuration (not for version control):
+
+```bash
+claude-sandbox init-local
+```
+
+This creates `.claude/sandbox.local.toml` in your current directory. Use this for personal or machine-specific settings that should not be committed. Add it to `.gitignore`.
+
 Create a user-level configuration:
 
 ```bash

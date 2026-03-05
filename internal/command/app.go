@@ -29,6 +29,7 @@ func newApp(cfg *config.Config) *cli.Command {
 
 	app.Commands = []*cli.Command{
 		NewInitCommand(),
+		NewInitLocalCommand(),
 		NewInitUserCommand(),
 		NewInitGlobalCommand(),
 		NewProfileCommand(),
