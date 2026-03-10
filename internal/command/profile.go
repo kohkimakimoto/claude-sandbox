@@ -20,7 +20,7 @@ func NewProfileCommand() *cli.Command {
 }
 
 func profileAction(ctx context.Context, cmd *cli.Command) error {
-	cfg, err := config.LoadMerged()
+	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}

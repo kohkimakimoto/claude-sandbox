@@ -9,15 +9,10 @@ import (
 )
 
 func Run(args []string) error {
-	cfg, err := config.LoadMerged()
-	if err != nil {
-		return err
-	}
-
-	return newApp(cfg).Run(context.Background(), args)
+	return newApp().Run(context.Background(), args)
 }
 
-func newApp(cfg *config.Config) *cli.Command {
+func newApp() *cli.Command {
 	app := &cli.Command{
 		Name:                          "claude-sandbox",
 		HideVersion:                   true,
@@ -44,12 +39,14 @@ func newApp(cfg *config.Config) *cli.Command {
 			if first == "help" || first == "--help" || first == "-h" {
 				return cli.ShowAppHelp(cmd)
 			}
-			// If args are present and not a builtin command, run claude with all args
-			return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
 		}
 
-		// No args: run claude without arguments
-		return RunClaudeAction(ctx, cmd, nil, cfg)
+		cfg, err := config.Load()
+		if err != nil {
+			return err
+		}
+		// If args are present and not a builtin command, run claude with all args
+		return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
 	}
 
 	return app

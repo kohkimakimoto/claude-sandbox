@@ -85,13 +85,13 @@ func ResolveConfigPaths() ConfigPaths {
 	return paths
 }
 
-// LoadMerged loads and merges configs from all scopes in order:
+// Load loads and merges configs from all scopes in order:
 //  1. user   (~/.claude/sandbox.toml)
 //  2. project (.claude/sandbox.toml in workdir)
 //  3. local   (.claude/sandbox.local.toml in workdir)
 //
 // Each scope overrides the previous one for any field that is explicitly set.
-func LoadMerged() (*Config, error) {
+func Load() (*Config, error) {
 	paths := ResolveConfigPaths()
 
 	merged := &Config{}
@@ -100,7 +100,7 @@ func LoadMerged() (*Config, error) {
 		if path == "" {
 			continue
 		}
-		cfg, err := Load(path)
+		cfg, err := LoadFile(path)
 		if err != nil {
 			return nil, err
 		}
@@ -110,9 +110,9 @@ func LoadMerged() (*Config, error) {
 	return merged, nil
 }
 
-// Load reads and parses a TOML config file at the given path.
+// LoadFile reads and parses a TOML config file at the given path.
 // If the path is empty or the file does not exist, it returns an empty Config without error.
-func Load(path string) (*Config, error) {
+func LoadFile(path string) (*Config, error) {
 	cfg := &Config{}
 
 	if path == "" {

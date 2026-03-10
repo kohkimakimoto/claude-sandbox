@@ -22,7 +22,7 @@ func NewClaudeCommand() *cli.Command {
 		CustomHelpTemplate: HelpTemplate,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			// When invoked as a subcommand, load merged config
-			cfg, err := config.LoadMerged()
+			cfg, err := config.Load()
 			if err != nil {
 				return err
 			}
