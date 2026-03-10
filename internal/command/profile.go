@@ -20,7 +20,7 @@ func NewProfileCommand() *cli.Command {
 }
 
 func profileAction(ctx context.Context, cmd *cli.Command) error {
-	cfg, err := config.LoadMerged()
+	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
@@ -36,6 +36,6 @@ func profileAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to read profile: %w", err)
 	}
 
-	_, err = cmd.Writer.Write(content)
+	_, err = cmd.Root().Writer.Write(content)
 	return err
 }

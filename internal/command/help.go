@@ -8,22 +8,13 @@ A wrapper around the claude command to run it in a sandboxed environment.
 Builtin commands:{{template "visibleCommandCategoryTemplate" .}}
 
 Configuration:
-   All settings are managed through a single TOML configuration file.
    claude-sandbox looks for config files in the following order:
 
-   1. .claude/sandbox.toml (project-specific config)
-   2. $HOME/.claude/sandbox.toml (global config)
+   1. $HOME/.claude/sandbox.toml (user-level)
+   2. .claude/sandbox.toml (project-level)
+   3. .claude/sandbox.local.toml (local overrides, gitignore-friendly)
 
-   The project-specific config takes precedence over the global config.
-   If neither exists, built-in defaults are used.
-
-   The [sandbox] section can contain:
-   - profile: sandbox-exec profile content (if not set, built-in default is used)
-   - workdir: override working directory
-   - claude_bin: override path to claude binary
-
-   The [unboxexec] section can contain:
-   - allowed_commands: regex patterns for commands allowed via unboxexec
+   See: https://github.com/kohkimakimoto/claude-sandbox#configuration-file
 
 Example Usage:
    # Create project-specific config file
@@ -53,6 +44,7 @@ Example Usage:
    $ claude-sandbox claude -h
 
 Version: {{ .Version }}
+Commit: {{ index (ExtraInfo) "CommitHash" }}
 {{template "copyrightTemplate" .}}
 `
 

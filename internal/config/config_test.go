@@ -20,9 +20,9 @@ allowed_commands = [
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	cfg, err := Load(path)
+	cfg, err := LoadFile(path)
 	if err != nil {
-		t.Fatalf("Load failed: %v", err)
+		t.Fatalf("LoadFile failed: %v", err)
 	}
 
 	if len(cfg.Unboxexec.AllowedCommands) != 2 {
@@ -54,9 +54,9 @@ allowed_commands = [
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	cfg, err := Load(path)
+	cfg, err := LoadFile(path)
 	if err != nil {
-		t.Fatalf("Load failed: %v", err)
+		t.Fatalf("LoadFile failed: %v", err)
 	}
 
 	if cfg.Sandbox.Profile != "(version 1)\n(allow default)" {
@@ -88,9 +88,9 @@ profile = '''
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	cfg, err := Load(path)
+	cfg, err := LoadFile(path)
 	if err != nil {
-		t.Fatalf("Load failed: %v", err)
+		t.Fatalf("LoadFile failed: %v", err)
 	}
 
 	// TOML multiline literal strings (''') strip the first newline
@@ -111,9 +111,9 @@ allowed_commands = ["^echo"]
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	cfg, err := Load(path)
+	cfg, err := LoadFile(path)
 	if err != nil {
-		t.Fatalf("Load failed: %v", err)
+		t.Fatalf("LoadFile failed: %v", err)
 	}
 
 	// Sandbox fields should be zero values when not specified
@@ -129,7 +129,7 @@ allowed_commands = ["^echo"]
 }
 
 func TestLoadEmptyPath(t *testing.T) {
-	cfg, err := Load("")
+	cfg, err := LoadFile("")
 	if err != nil {
 		t.Fatalf("expected no error for empty path, got: %v", err)
 	}
@@ -142,7 +142,7 @@ func TestLoadEmptyPath(t *testing.T) {
 }
 
 func TestLoadMissingFile(t *testing.T) {
-	cfg, err := Load("/nonexistent/path/config.toml")
+	cfg, err := LoadFile("/nonexistent/path/config.toml")
 	if err != nil {
 		t.Fatalf("expected no error for missing file, got: %v", err)
 	}
@@ -161,7 +161,7 @@ func TestLoadInvalidTOML(t *testing.T) {
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	_, err := Load(path)
+	_, err := LoadFile(path)
 	if err == nil {
 		t.Fatal("expected error for invalid TOML")
 	}
@@ -274,7 +274,7 @@ func TestMergeIntoKeepsDstWhenSrcEmpty(t *testing.T) {
 	}
 }
 
-// --- LoadMerged tests ---
+// --- Load tests ---
 
 // setupHome temporarily overrides HOME and creates the .claude dir.
 // Returns cleanup func.
@@ -294,7 +294,7 @@ func setupHome(t *testing.T, dir string) func() {
 	}
 }
 
-func TestLoadMergedUserOnly(t *testing.T) {
+func TestLoadUserOnly(t *testing.T) {
 	tmpHome := t.TempDir()
 	cleanup := setupHome(t, tmpHome)
 	defer cleanup()
@@ -325,9 +325,9 @@ allowed_commands = ["^user-cmd"]
 		}
 	}()
 
-	cfg, err := LoadMerged()
+	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("LoadMerged failed: %v", err)
+		t.Fatalf("Load failed: %v", err)
 	}
 	if cfg.Sandbox.Workdir != "/from-user" {
 		t.Errorf("expected workdir from user config, got %q", cfg.Sandbox.Workdir)
@@ -337,7 +337,7 @@ allowed_commands = ["^user-cmd"]
 	}
 }
 
-func TestLoadMergedProjectOverridesUser(t *testing.T) {
+func TestLoadProjectOverridesUser(t *testing.T) {
 	tmpHome := t.TempDir()
 	cleanup := setupHome(t, tmpHome)
 	defer cleanup()
@@ -382,9 +382,9 @@ allowed_commands = ["^project-cmd"]
 		t.Fatal(err)
 	}
 
-	cfg, err := LoadMerged()
+	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("LoadMerged failed: %v", err)
+		t.Fatalf("Load failed: %v", err)
 	}
 	// project overrides user workdir and allowed_commands
 	if cfg.Sandbox.Workdir != "/from-project" {
@@ -399,7 +399,7 @@ allowed_commands = ["^project-cmd"]
 	}
 }
 
-func TestLoadMergedLocalOverridesAll(t *testing.T) {
+func TestLoadLocalOverridesAll(t *testing.T) {
 	tmpHome := t.TempDir()
 	cleanup := setupHome(t, tmpHome)
 	defer cleanup()
@@ -450,9 +450,9 @@ allowed_commands = ["^local-cmd"]
 		t.Fatal(err)
 	}
 
-	cfg, err := LoadMerged()
+	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("LoadMerged failed: %v", err)
+		t.Fatalf("Load failed: %v", err)
 	}
 	// local overrides allowed_commands
 	if len(cfg.Unboxexec.AllowedCommands) != 1 || cfg.Unboxexec.AllowedCommands[0] != "^local-cmd" {
@@ -464,7 +464,7 @@ allowed_commands = ["^local-cmd"]
 	}
 }
 
-func TestLoadMergedNoConfigsReturnsEmpty(t *testing.T) {
+func TestLoadNoConfigsReturnsEmpty(t *testing.T) {
 	tmpHome := t.TempDir()
 	cleanup := setupHome(t, tmpHome)
 	defer cleanup()
@@ -483,9 +483,9 @@ func TestLoadMergedNoConfigsReturnsEmpty(t *testing.T) {
 		}
 	}()
 
-	cfg, err := LoadMerged()
+	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("LoadMerged failed: %v", err)
+		t.Fatalf("Load failed: %v", err)
 	}
 	if cfg.Sandbox.Profile != "" || cfg.Sandbox.Workdir != "" || cfg.Sandbox.ClaudeBin != "" {
 		t.Errorf("expected all sandbox fields empty, got %+v", cfg.Sandbox)
