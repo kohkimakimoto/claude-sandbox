@@ -29,6 +29,7 @@ func newApp() *cli.Command {
 		NewInitUserCommand(),
 		NewInitGlobalCommand(),
 		NewProfileCommand(),
+		NewVersionCommand(),
 		NewClaudeCommand(),
 		NewUnboxexecCommand(),
 	}
@@ -38,6 +39,9 @@ func newApp() *cli.Command {
 			first := cmd.Args().First()
 			if first == "help" || first == "--help" || first == "-h" {
 				return cli.ShowAppHelp(cmd)
+			}
+			if first == "-v" || first == "--version" {
+				return versionAction(ctx, cmd)
 			}
 		}
 

@@ -67,6 +67,6 @@ func initLocalAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	fmt.Fprintf(cmd.Writer, "Created local config file: %s\n", configFile)
+	fmt.Fprintf(cmd.Root().Writer, "Created local config file: %s\n", configFile)
 	return nil
 }

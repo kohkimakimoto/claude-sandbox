@@ -65,6 +65,6 @@ func initAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
 
-	fmt.Fprintf(cmd.Writer, "Created config file: %s\n", configFile)
+	fmt.Fprintf(cmd.Root().Writer, "Created config file: %s\n", configFile)
 	return nil
 }
