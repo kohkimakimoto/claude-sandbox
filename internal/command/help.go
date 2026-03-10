@@ -53,6 +53,7 @@ Example Usage:
    $ claude-sandbox claude -h
 
 Version: {{ .Version }}
+Commit: {{ index (ExtraInfo) "CommitHash" }}
 {{template "copyrightTemplate" .}}
 `
 

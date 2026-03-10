@@ -22,6 +22,7 @@ func newApp(cfg *config.Config) *cli.Command {
 		Name:                          "claude-sandbox",
 		HideVersion:                   true,
 		Version:                       version.Version,
+		ExtraInfo:                     func() map[string]string { return map[string]string{"CommitHash": version.CommitHash} },
 		Copyright:                     "Copyright (c) Kohki Makimoto",
 		SkipFlagParsing:               true,
 		CustomRootCommandHelpTemplate: RootHelpTemplate,
