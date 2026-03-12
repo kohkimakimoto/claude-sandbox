@@ -12,7 +12,7 @@ func TestInitLocalCommand(t *testing.T) {
 	t.Run("creates .claude/sandbox.local.toml in the working directory", func(t *testing.T) {
 		dir := testChdirTemp(t)
 
-		cmd := NewInitLocalCommand()
+		cmd := InitLocalCommand()
 		cmd.Writer = &bytes.Buffer{}
 
 		if err := cmd.Run(context.Background(), []string{"init-local"}); err != nil {
@@ -37,7 +37,7 @@ func TestInitLocalCommand(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		cmd := NewInitLocalCommand()
+		cmd := InitLocalCommand()
 		cmd.Writer = &bytes.Buffer{}
 
 		if err := cmd.Run(context.Background(), []string{"init-local"}); err == nil {

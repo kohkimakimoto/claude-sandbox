@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func NewProfileCommand() *cli.Command {
+func ProfileCommand() *cli.Command {
 	return &cli.Command{
 		Name:               "profile",
 		Usage:              "Print evaluated profile and exit",

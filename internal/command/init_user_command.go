@@ -39,8 +39,8 @@ allowed_commands = [
 `
 }
 
-// NewInitUserCommand creates the user-level sandbox.toml (~/.claude/sandbox.toml).
-func NewInitUserCommand() *cli.Command {
+// InitUserCommand creates the user-level sandbox.toml (~/.claude/sandbox.toml).
+func InitUserCommand() *cli.Command {
 	return &cli.Command{
 		Name:               "init-user",
 		Usage:              "Create $HOME/.claude/sandbox.toml file if it doesn't exist",
@@ -49,8 +49,8 @@ func NewInitUserCommand() *cli.Command {
 	}
 }
 
-// NewInitGlobalCommand is kept as a backward-compatible alias for NewInitUserCommand.
-func NewInitGlobalCommand() *cli.Command {
+// InitGlobalCommand is kept as a backward-compatible alias for InitUserCommand.
+func InitGlobalCommand() *cli.Command {
 	return &cli.Command{
 		Name:               "init-global",
 		Usage:              "Alias for init-user (deprecated)",

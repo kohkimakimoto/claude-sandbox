@@ -3,7 +3,7 @@ package command
 // RootHelpTemplate is the help template for the root command.
 const RootHelpTemplate = `Usage: claude-sandbox [<command>]|[claude [<args of claude command...>]]
 
-A wrapper around the claude command to run it in a sandboxed environment.
+{{template "descriptionTemplate" .}}
 
 Builtin commands:{{template "visibleCommandCategoryTemplate" .}}
 

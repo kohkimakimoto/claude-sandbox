@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func NewClaudeCommand() *cli.Command {
+func ClaudeCommand() *cli.Command {
 	return &cli.Command{
 		Name:               "claude",
 		Usage:              "Run the claude command in a sandboxed environment",
