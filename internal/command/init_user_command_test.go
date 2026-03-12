@@ -13,7 +13,7 @@ func TestInitUserCommand(t *testing.T) {
 		fakeHome := testSetupFakeHome(t)
 
 		buf := &bytes.Buffer{}
-		cmd := NewInitUserCommand()
+		cmd := InitUserCommand()
 		cmd.Writer = buf
 
 		if err := cmd.Run(context.Background(), []string{"init-user"}); err != nil {
@@ -35,7 +35,7 @@ func TestInitUserCommand(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		cmd := NewInitUserCommand()
+		cmd := InitUserCommand()
 		cmd.Writer = &bytes.Buffer{}
 
 		if err := cmd.Run(context.Background(), []string{"init-user"}); err == nil {

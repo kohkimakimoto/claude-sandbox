@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func NewUnboxexecCommand() *cli.Command {
+func UnboxexecCommand() *cli.Command {
 	return &cli.Command{
 		Name:               "unboxexec",
 		Usage:              "Execute a command outside the sandbox via the unboxexec daemon",

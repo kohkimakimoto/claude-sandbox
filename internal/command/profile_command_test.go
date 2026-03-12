@@ -29,7 +29,7 @@ func TestProfileCommand(t *testing.T) {
 		}
 
 		buf := &bytes.Buffer{}
-		cmd := NewProfileCommand()
+		cmd := ProfileCommand()
 		cmd.Writer = buf
 
 		if err := cmd.Run(context.Background(), []string{"profile"}); err != nil {
@@ -59,7 +59,7 @@ func TestProfileCommand(t *testing.T) {
 		}
 
 		buf := &bytes.Buffer{}
-		cmd := NewProfileCommand()
+		cmd := ProfileCommand()
 		cmd.Writer = buf
 
 		if err := cmd.Run(context.Background(), []string{"profile"}); err != nil {
@@ -90,7 +90,7 @@ func TestProfileCommand(t *testing.T) {
 		}
 
 		buf := &bytes.Buffer{}
-		cmd := NewProfileCommand()
+		cmd := ProfileCommand()
 		cmd.Writer = buf
 
 		if err := cmd.Run(context.Background(), []string{"profile"}); err != nil {

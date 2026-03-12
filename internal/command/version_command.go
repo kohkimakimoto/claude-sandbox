@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func NewVersionCommand() *cli.Command {
+func VersionCommand() *cli.Command {
 	return &cli.Command{
 		Name:               "version",
 		Usage:              "Print version and exit",

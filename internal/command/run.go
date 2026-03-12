@@ -13,45 +13,42 @@ func Run(args []string) error {
 }
 
 func newApp() *cli.Command {
-	app := &cli.Command{
+	return &cli.Command{
 		Name:                          "claude-sandbox",
+		Description:                   "A wrapper around the claude command to run it in a sandboxed environment.",
+		Copyright:                     "Copyright (c) Kohki Makimoto",
 		HideVersion:                   true,
 		Version:                       version.Version,
 		ExtraInfo:                     func() map[string]string { return map[string]string{"CommitHash": version.CommitHash} },
-		Copyright:                     "Copyright (c) Kohki Makimoto",
 		SkipFlagParsing:               true,
 		CustomRootCommandHelpTemplate: RootHelpTemplate,
-	}
-
-	app.Commands = []*cli.Command{
-		NewInitCommand(),
-		NewInitLocalCommand(),
-		NewInitUserCommand(),
-		NewInitGlobalCommand(),
-		NewProfileCommand(),
-		NewVersionCommand(),
-		NewClaudeCommand(),
-		NewUnboxexecCommand(),
-	}
-
-	app.Action = func(ctx context.Context, cmd *cli.Command) error {
-		if cmd.Args().Present() {
-			first := cmd.Args().First()
-			if first == "help" || first == "--help" || first == "-h" {
-				return cli.ShowAppHelp(cmd)
+		Commands: []*cli.Command{
+			InitCommand(),
+			InitLocalCommand(),
+			InitUserCommand(),
+			InitGlobalCommand(),
+			ProfileCommand(),
+			VersionCommand(),
+			ClaudeCommand(),
+			UnboxexecCommand(),
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			if cmd.Args().Present() {
+				first := cmd.Args().First()
+				if first == "help" || first == "--help" || first == "-h" {
+					return cli.ShowAppHelp(cmd)
+				}
+				if first == "-v" || first == "--version" {
+					return versionAction(ctx, cmd)
+				}
 			}
-			if first == "-v" || first == "--version" {
-				return versionAction(ctx, cmd)
+
+			cfg, err := config.Load()
+			if err != nil {
+				return err
 			}
-		}
-
-		cfg, err := config.Load()
-		if err != nil {
-			return err
-		}
-		// If args are present and not a builtin command, run claude with all args
-		return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
+			// If args are present and not a builtin command, run claude with all args
+			return RunClaudeAction(ctx, cmd, cmd.Args().Slice(), cfg)
+		},
 	}
-
-	return app
 }
