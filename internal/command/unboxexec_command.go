@@ -12,9 +12,8 @@ import (
 
 func UnboxexecCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "unboxexec",
-		Usage:              "Execute a command outside the sandbox via the unboxexec daemon",
-		CustomHelpTemplate: HelpTemplate,
+		Name:  "unboxexec",
+		Usage: "Execute a command outside the sandbox via the unboxexec daemon",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "dir",

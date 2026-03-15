@@ -10,10 +10,9 @@ import (
 
 func VersionCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "version",
-		Usage:              "Print version and exit",
-		CustomHelpTemplate: HelpTemplate,
-		Action:             versionAction,
+		Name:   "version",
+		Usage:  "Print version and exit",
+		Action: versionAction,
 	}
 }
 

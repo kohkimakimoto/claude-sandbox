@@ -41,10 +41,9 @@ allowed_commands = [
 
 func InitCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "init",
-		Usage:              "Create .claude/sandbox.toml file if it doesn't exist",
-		CustomHelpTemplate: HelpTemplate,
-		Action:             initAction,
+		Name:   "init",
+		Usage:  "Create .claude/sandbox.toml file if it doesn't exist",
+		Action: initAction,
 	}
 }
 
