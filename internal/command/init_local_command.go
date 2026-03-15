@@ -43,10 +43,9 @@ allowed_commands = [
 
 func InitLocalCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "init-local",
-		Usage:              "Create .claude/sandbox.local.toml file if it doesn't exist",
-		CustomHelpTemplate: HelpTemplate,
-		Action:             initLocalAction,
+		Name:   "init-local",
+		Usage:  "Create .claude/sandbox.local.toml file if it doesn't exist",
+		Action: initLocalAction,
 	}
 }
 

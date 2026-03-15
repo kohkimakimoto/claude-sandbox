@@ -16,10 +16,9 @@ import (
 
 func ClaudeCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "claude",
-		Usage:              "Run the claude command in a sandboxed environment",
-		SkipFlagParsing:    true,
-		CustomHelpTemplate: HelpTemplate,
+		Name:            "claude",
+		Usage:           "Run the claude command in a sandboxed environment",
+		SkipFlagParsing: true,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			// When invoked as a subcommand, load merged config
 			cfg, err := config.Load()

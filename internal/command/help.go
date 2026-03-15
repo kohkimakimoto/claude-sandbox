@@ -1,9 +1,11 @@
 package command
 
-// RootHelpTemplate is the help template for the root command.
-const RootHelpTemplate = `Usage: claude-sandbox [<command>]|[claude [<args of claude command...>]]
+import "github.com/urfave/cli/v3"
 
-{{template "descriptionTemplate" .}}
+func init() {
+	cli.RootCommandHelpTemplate = `Usage: claude-sandbox [<command>]|[claude [<args of claude command...>]]
+
+{{if .Usage}}{{ .Usage }}{{end}}
 
 Builtin commands:{{template "visibleCommandCategoryTemplate" .}}
 
@@ -48,10 +50,14 @@ Commit: {{ index (ExtraInfo) "CommitHash" }}
 {{template "copyrightTemplate" .}}
 `
 
-// HelpTemplate is the help template for subcommands.
-const HelpTemplate = `Usage: {{template "usageTemplate" .}}
+	cli.CommandHelpTemplate = `Usage: {{template "usageTemplate" .}}
 
-{{template "helpNameTemplate" .}}
+{{if .Usage}}{{ .Usage }}{{end}}{{if .VisibleFlagCategories}}
 
-Options:{{template "visibleFlagTemplate" .}}
+Options:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+Options:{{template "visibleFlagTemplate" .}}{{end}}{{if .VisiblePersistentFlags}}
+
+Global Options:{{template "visiblePersistentFlagTemplate" .}}{{end}}
 `
+}

@@ -14,14 +14,13 @@ func Run(args []string) error {
 
 func newApp() *cli.Command {
 	return &cli.Command{
-		Name:                          "claude-sandbox",
-		Description:                   "A wrapper around the claude command to run it in a sandboxed environment.",
-		Copyright:                     "Copyright (c) Kohki Makimoto",
-		HideVersion:                   true,
-		Version:                       version.Version,
-		ExtraInfo:                     func() map[string]string { return map[string]string{"CommitHash": version.CommitHash} },
-		SkipFlagParsing:               true,
-		CustomRootCommandHelpTemplate: RootHelpTemplate,
+		Name:            "claude-sandbox",
+		Usage:           "A wrapper around the claude command to run it in a sandboxed environment.",
+		Copyright:       "Copyright (c) Kohki Makimoto",
+		HideVersion:     true,
+		Version:         version.Version,
+		ExtraInfo:       func() map[string]string { return map[string]string{"CommitHash": version.CommitHash} },
+		SkipFlagParsing: true,
 		Commands: []*cli.Command{
 			InitCommand(),
 			InitLocalCommand(),

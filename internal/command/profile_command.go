@@ -12,10 +12,9 @@ import (
 
 func ProfileCommand() *cli.Command {
 	return &cli.Command{
-		Name:               "profile",
-		Usage:              "Print evaluated profile and exit",
-		CustomHelpTemplate: HelpTemplate,
-		Action:             profileAction,
+		Name:   "profile",
+		Usage:  "Print evaluated profile and exit",
+		Action: profileAction,
 	}
 }
 
